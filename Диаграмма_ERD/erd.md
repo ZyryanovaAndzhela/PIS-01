@@ -1,4 +1,4 @@
-![Image alt](https://github.com/ZyryanovaAndzhela/PIS-01/raw/lb_2/диаграмма.png) 
+![Image alt](https://github.com/ZyryanovaAndzhela/PIS-01/raw/main/Диаграмма_ERD/диаграмма.png 
 
 # Cущности и их атрибуты:
 
