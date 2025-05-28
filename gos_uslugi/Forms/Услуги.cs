@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Threading.Tasks;
+using gos_uslugi.Repositories;
+using gos_uslugi.Services;
 
 namespace gos_uslugi
 {
@@ -34,7 +36,7 @@ namespace gos_uslugi
                     {
                         ListViewItem item = new ListViewItem(service.Description);
                         item.SubItems.Add(service.Price.ToString("C"));
-                        item.Tag = service.Id; // Сохраняем id услуги в свойстве Tag
+                        item.Tag = service.Id;
                         listView1.Items.Add(item);
                     }
                 }
@@ -56,7 +58,9 @@ namespace gos_uslugi
                 ListViewItem selectedItem = listView1.SelectedItems[0];
                 long serviceId = (long)selectedItem.Tag;
 
-                ServiceRepository serviceRepository = new ServiceRepository();
+                RuleRepository ruleRepository = new RuleRepository(ConfigurationManager.ConnectionString);
+                RuleService ruleService = new RuleService(ruleRepository);
+                IServiceRepository serviceRepository = new ServiceRepository(ConfigurationManager.ConnectionString, ruleService);
                 Service selectedService = await serviceRepository.FindById(serviceId);
 
                 if (selectedService != null)

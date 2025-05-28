@@ -1,4 +1,6 @@
-﻿using System;
+﻿using gos_uslugi.Repositories;
+using gos_uslugi.Services;
+using System;
 using System.Windows.Forms;
 
 namespace gos_uslugi
@@ -56,7 +58,9 @@ namespace gos_uslugi
 
         private void buttonEditService_Click(object sender, EventArgs e)
         {
-            var serviceRepository = new ServiceRepository();
+            RuleRepository ruleRepository = new RuleRepository(ConfigurationManager.ConnectionString);
+            RuleService ruleService = new RuleService(ruleRepository);
+            IServiceRepository serviceRepository = new ServiceRepository(ConfigurationManager.ConnectionString, ruleService);
             ИзменениеУслуги изменениеУслуги = new ИзменениеУслуги(_service.Id, serviceRepository);
             this.Hide();
             изменениеУслуги.ShowDialog();

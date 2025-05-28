@@ -8,13 +8,15 @@ namespace gos_uslugi
     {
         private long _serviceId;
         private readonly IServiceRepository _serviceRepository;
+        private readonly IRuleRepository _ruleRepository;
         private List<ServiceRule> _rules;
 
-        public ИзменениеПравилУслуги(long serviceId, IServiceRepository serviceRepository)
+        public ИзменениеПравилУслуги(long serviceId, IServiceRepository serviceRepository, IRuleRepository ruleRepository)
         {
             InitializeComponent();
             _serviceId = serviceId;
             _serviceRepository = serviceRepository;
+            _ruleRepository = ruleRepository;
 
             LoadRules();
         }
@@ -23,7 +25,7 @@ namespace gos_uslugi
         {
             try
             {
-                List<ServiceRule> rulesFromDb = await _serviceRepository.GetServiceRules(_serviceId);
+                List<ServiceRule> rulesFromDb = await _ruleRepository.GetServiceRules(_serviceId);
                 _rules = new List<ServiceRule>(rulesFromDb);
                 
                 dataGridViewRules.DataSource = _rules;
@@ -39,14 +41,14 @@ namespace gos_uslugi
                 {
                     DataPropertyName = "ConditionType",
                     HeaderText = "Тип условия",
-                    Width = 100
+                    Width = 150
                 });
 
                 dataGridViewRules.Columns.Add(new DataGridViewTextBoxColumn
                 {
                     DataPropertyName = "ConditionValues",
                     HeaderText = "Значение условия",
-                    Width = 100
+                    Width = 150
                 });
 
                 dataGridViewRules.Columns.Add(new DataGridViewTextBoxColumn
@@ -77,11 +79,11 @@ namespace gos_uslugi
                 {
                     if (rule.Id == 0) 
                     {
-                        await _serviceRepository.SaveServiceRule(rule);
+                        await _ruleRepository.SaveServiceRule(rule);
                     }
                     else
                     {
-                        await _serviceRepository.UpdateServiceRule(rule);
+                        await _ruleRepository.UpdateServiceRule(rule);
                     }
                 }
 

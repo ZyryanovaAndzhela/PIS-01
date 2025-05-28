@@ -442,24 +442,5 @@ namespace gos_uslugi.Repositories
                 }
             }
         }
-        public async Task<List<Request>> FindAllByService(long serviceId)
-        {
-            return null;
-        }
-
-        public async Task<List<Request>> FindAllByForeignerId(long foreignerId)
-        {
-            return null;
-        }
-
-        public async Task<List<Request>> FindAll()
-        {
-            return null;
-        }
-
-        public async Task Delete(long requestId)
-        {
-
-        }
     }
 }

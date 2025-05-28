@@ -36,7 +36,9 @@ namespace gos_uslugi
 
         private void button2_Click(object sender, EventArgs e)
         {
-            IServiceRepository serviceRepository = new ServiceRepository();
+            RuleRepository ruleRepository = new RuleRepository(ConfigurationManager.ConnectionString);
+            RuleService ruleService = new RuleService(ruleRepository);
+            IServiceRepository serviceRepository = new ServiceRepository(ConfigurationManager.ConnectionString, ruleService);
             Услуги form6 = new Услуги(_account, serviceRepository);
             this.Hide();
             form6.ShowDialog();

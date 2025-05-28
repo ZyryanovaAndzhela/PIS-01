@@ -104,6 +104,7 @@
     <Compile Include="Repositories\AccountRepository.cs" />
     <Compile Include="Repositories\ForeignerRepository.cs" />
     <Compile Include="Repositories\RequestRepository.cs" />
+    <Compile Include="Repositories\RuleRepository.cs" />
     <Compile Include="Repositories\ServiceRepository.cs" />
     <Compile Include="Services.cs" />
     <Compile Include="Services\AuthenticationService.cs" />
@@ -183,6 +184,7 @@
     <Compile Include="Forms\ДеталиУслуги.Designer.cs">
       <DependentUpon>ДеталиУслуги.cs</DependentUpon>
     </Compile>
+    <Compile Include="Services\RuleService.cs" />
     <EmbeddedResource Include="Forms\Авторизация.resx">
       <DependentUpon>Авторизация.cs</DependentUpon>
     </EmbeddedResource>

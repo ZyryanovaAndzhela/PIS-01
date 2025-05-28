@@ -8,10 +8,6 @@ namespace gos_uslugi
         Task<Request> Save(Request request);
         Task UpdateAsync(Request request);
         Task<Request> FindById(long requestId);
-        Task<List<Request>> FindAllByService(long serviceId);
-        Task<List<Request>> FindAllByForeignerId(long foreignerId);
-        Task<List<Request>> FindAll();
-        Task Delete(long requestId);
         Task<List<Service>> GetAllServices(string citizen, string purposeVisit);
         Task CreateRequest(Request request);
         Task<Foreigner> GetForeignerByAccountId(long accountId);
@@ -43,16 +39,12 @@ namespace gos_uslugi
         Task<List<GovernmentEmployee>> GetAllEmployees(); 
         Task UpdateService(Service service);
         Task DeleteService(long serviceId);
-        Task<List<ServiceRule>> GetServiceRules(long serviceId);
-        Task UpdateServiceRule(ServiceRule serviceRule);
-        Task<ServiceRule> SaveServiceRule(ServiceRule serviceRule);
-
     }
 
     public interface IRuleRepository
     {
-        Task<ServiceRule> Save(ServiceRule rule);
-        Task<List<ServiceRule>> FindAllByServiceId(long serviceId);
-        Task<List<ServiceRule>> FindAll();
+        Task<List<ServiceRule>> GetServiceRules(long serviceId);
+        Task<ServiceRule> SaveServiceRule(ServiceRule serviceRule);
+        Task UpdateServiceRule(ServiceRule serviceRule);
     }
 }

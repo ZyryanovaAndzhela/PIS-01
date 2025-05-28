@@ -30,6 +30,11 @@ namespace gos_uslugi
                 comboBoxFilterStatus.Items.Add(status);
             }
             comboBoxFilterStatus.SelectedIndex = 0;
+            if (_account.Role == "foreigner")
+            {
+                buttonCreateRequest.Visible = true;
+            }
+            else { buttonCreateRequest.Visible = false; }
         }
 
         private async Task LoadForeignerRequestsAsync()
@@ -67,7 +72,9 @@ namespace gos_uslugi
         {
             try
             {
-                IServiceRepository serviceRepository = new ServiceRepository();
+                RuleRepository ruleRepository = new RuleRepository(ConfigurationManager.ConnectionString);
+                RuleService ruleService = new RuleService(ruleRepository);
+                IServiceRepository serviceRepository = new ServiceRepository(ConfigurationManager.ConnectionString, ruleService);
                 Service service = await serviceRepository.FindById(serviceId);
                 return service?.Description ?? "Описание не найдено";
             }

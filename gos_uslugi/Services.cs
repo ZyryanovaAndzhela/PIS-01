@@ -32,8 +32,11 @@ namespace gos_uslugi
 
     public interface IRuleService
     {
-        Task<ServiceRule> CreateRule(ServiceRule ruleData, string serviceName);
-        Task<List<ServiceRule>> GetRulesByServiceName(string serviceName);
-        Task<List<ServiceRule>> GetAllServiceRules();
+        //Task<ServiceRule> CreateRule(ServiceRule ruleData, string serviceName);
+        //Task<List<ServiceRule>> GetRulesByServiceName(string serviceName);
+        //Task<List<ServiceRule>> GetAllServiceRules();
+        Task<List<ServiceRule>> GetServiceRules(long serviceId);
+        Task<ServiceRule> SaveServiceRule(ServiceRule serviceRule);
+        Task UpdateServiceRule(ServiceRule serviceRule);
     }
 }

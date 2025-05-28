@@ -1,4 +1,5 @@
-﻿using System;
+﻿using gos_uslugi.Repositories;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -114,7 +115,9 @@ namespace gos_uslugi
 
         private void buttonEditRules_Click(object sender, EventArgs e)
         {
-            Form editRules = new ИзменениеПравилУслуги(_serviceId, _serviceRepository);
+            string connectionString = ConfigurationManager.ConnectionString; // Замените на ваш способ получения строки подключения
+            RuleRepository ruleRepository = new RuleRepository(connectionString); //  Создаем экземпляр RuleRepository
+            ИзменениеПравилУслуги editRules = new ИзменениеПравилУслуги(_serviceId, _serviceRepository, ruleRepository);
             this.Hide();
             editRules.ShowDialog();
             this.Show();
