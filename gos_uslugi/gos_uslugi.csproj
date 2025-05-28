@@ -109,111 +109,111 @@
     <Compile Include="Services\AuthenticationService.cs" />
     <Compile Include="Services\ForeignerService.cs" />
     <Compile Include="Services\RequestService.cs" />
-    <Compile Include="Авторизация.cs">
+    <Compile Include="Forms\Авторизация.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Авторизация.Designer.cs">
+    <Compile Include="Forms\Авторизация.Designer.cs">
       <DependentUpon>Авторизация.cs</DependentUpon>
     </Compile>
-    <Compile Include="ГлавноеМеню.cs">
+    <Compile Include="Forms\ГлавноеМеню.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ГлавноеМеню.Designer.cs">
+    <Compile Include="Forms\ГлавноеМеню.Designer.cs">
       <DependentUpon>ГлавноеМеню.cs</DependentUpon>
     </Compile>
-    <Compile Include="ДеталиЗаявки.cs">
+    <Compile Include="Forms\ДеталиЗаявки.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ДеталиЗаявки.Designer.cs">
+    <Compile Include="Forms\ДеталиЗаявки.Designer.cs">
       <DependentUpon>ДеталиЗаявки.cs</DependentUpon>
     </Compile>
-    <Compile Include="ИзменениеПравилУслуги.cs">
+    <Compile Include="Forms\ИзменениеПравилУслуги.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ИзменениеПравилУслуги.Designer.cs">
+    <Compile Include="Forms\ИзменениеПравилУслуги.Designer.cs">
       <DependentUpon>ИзменениеПравилУслуги.cs</DependentUpon>
     </Compile>
-    <Compile Include="ИзменениеУслуги.cs">
+    <Compile Include="Forms\ИзменениеУслуги.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ИзменениеУслуги.Designer.cs">
+    <Compile Include="Forms\ИзменениеУслуги.Designer.cs">
       <DependentUpon>ИзменениеУслуги.cs</DependentUpon>
     </Compile>
-    <Compile Include="ЛичныйКабинет.cs">
+    <Compile Include="Forms\ЛичныйКабинет.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ЛичныйКабинет.Designer.cs">
+    <Compile Include="Forms\ЛичныйКабинет.Designer.cs">
       <DependentUpon>ЛичныйКабинет.cs</DependentUpon>
     </Compile>
-    <Compile Include="НоваяЗаявка.cs">
+    <Compile Include="Forms\НоваяЗаявка.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="НоваяЗаявка.Designer.cs">
+    <Compile Include="Forms\НоваяЗаявка.Designer.cs">
       <DependentUpon>НоваяЗаявка.cs</DependentUpon>
     </Compile>
-    <Compile Include="РедактированиеЗаявки.cs">
+    <Compile Include="Forms\РедактированиеЗаявки.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="РедактированиеЗаявки.Designer.cs">
+    <Compile Include="Forms\РедактированиеЗаявки.Designer.cs">
       <DependentUpon>РедактированиеЗаявки.cs</DependentUpon>
     </Compile>
-    <Compile Include="СозданиеНовогоАккаунта.cs">
+    <Compile Include="Forms\СозданиеНовогоАккаунта.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="СозданиеНовогоАккаунта.Designer.cs">
+    <Compile Include="Forms\СозданиеНовогоАккаунта.Designer.cs">
       <DependentUpon>СозданиеНовогоАккаунта.cs</DependentUpon>
     </Compile>
-    <Compile Include="Заявки.cs">
+    <Compile Include="Forms\Заявки.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Заявки.Designer.cs">
+    <Compile Include="Forms\Заявки.Designer.cs">
       <DependentUpon>Заявки.cs</DependentUpon>
     </Compile>
-    <Compile Include="Услуги.cs">
+    <Compile Include="Forms\Услуги.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Услуги.Designer.cs">
+    <Compile Include="Forms\Услуги.Designer.cs">
       <DependentUpon>Услуги.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ДеталиУслуги.cs">
+    <Compile Include="Forms\ДеталиУслуги.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ДеталиУслуги.Designer.cs">
+    <Compile Include="Forms\ДеталиУслуги.Designer.cs">
       <DependentUpon>ДеталиУслуги.cs</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="Авторизация.resx">
+    <EmbeddedResource Include="Forms\Авторизация.resx">
       <DependentUpon>Авторизация.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ГлавноеМеню.resx">
+    <EmbeddedResource Include="Forms\ГлавноеМеню.resx">
       <DependentUpon>ГлавноеМеню.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ДеталиЗаявки.resx">
+    <EmbeddedResource Include="Forms\ДеталиЗаявки.resx">
       <DependentUpon>ДеталиЗаявки.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ИзменениеПравилУслуги.resx">
+    <EmbeddedResource Include="Forms\ИзменениеПравилУслуги.resx">
       <DependentUpon>ИзменениеПравилУслуги.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ИзменениеУслуги.resx">
+    <EmbeddedResource Include="Forms\ИзменениеУслуги.resx">
       <DependentUpon>ИзменениеУслуги.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ЛичныйКабинет.resx">
+    <EmbeddedResource Include="Forms\ЛичныйКабинет.resx">
       <DependentUpon>ЛичныйКабинет.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="НоваяЗаявка.resx">
+    <EmbeddedResource Include="Forms\НоваяЗаявка.resx">
       <DependentUpon>НоваяЗаявка.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="РедактированиеЗаявки.resx">
+    <EmbeddedResource Include="Forms\РедактированиеЗаявки.resx">
       <DependentUpon>РедактированиеЗаявки.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="СозданиеНовогоАккаунта.resx">
+    <EmbeddedResource Include="Forms\СозданиеНовогоАккаунта.resx">
       <DependentUpon>СозданиеНовогоАккаунта.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Заявки.resx">
+    <EmbeddedResource Include="Forms\Заявки.resx">
       <DependentUpon>Заявки.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Услуги.resx">
+    <EmbeddedResource Include="Forms\Услуги.resx">
       <DependentUpon>Услуги.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -225,7 +225,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="ДеталиУслуги.resx">
+    <EmbeddedResource Include="Forms\ДеталиУслуги.resx">
       <DependentUpon>ДеталиУслуги.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
