@@ -26,5 +26,9 @@ namespace gos_uslugi.Services
         {
             await _ruleRepository.UpdateServiceRule(serviceRule);
         }
+        public async Task DeleteServiceRule(long ruleId)
+        {
+            await _ruleRepository.DeleteServiceRule(ruleId);
+        }
     }
 }

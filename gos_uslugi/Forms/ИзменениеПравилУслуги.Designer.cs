@@ -35,12 +35,13 @@
             this.ConditionValues = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.OperatorValues = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.TermOfServiceProvision = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.buttonDeleteRule = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewRules)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonSaveRules
             // 
-            this.buttonSaveRules.Location = new System.Drawing.Point(263, 607);
+            this.buttonSaveRules.Location = new System.Drawing.Point(381, 617);
             this.buttonSaveRules.Name = "buttonSaveRules";
             this.buttonSaveRules.Size = new System.Drawing.Size(156, 37);
             this.buttonSaveRules.TabIndex = 1;
@@ -62,6 +63,7 @@
             this.dataGridViewRules.RowHeadersVisible = false;
             this.dataGridViewRules.RowHeadersWidth = 51;
             this.dataGridViewRules.RowTemplate.Height = 24;
+            this.dataGridViewRules.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dataGridViewRules.Size = new System.Drawing.Size(692, 589);
             this.dataGridViewRules.TabIndex = 2;
             // 
@@ -100,11 +102,22 @@
             this.TermOfServiceProvision.Name = "TermOfServiceProvision";
             this.TermOfServiceProvision.Width = 125;
             // 
+            // buttonDeleteRule
+            // 
+            this.buttonDeleteRule.Location = new System.Drawing.Point(127, 617);
+            this.buttonDeleteRule.Name = "buttonDeleteRule";
+            this.buttonDeleteRule.Size = new System.Drawing.Size(156, 37);
+            this.buttonDeleteRule.TabIndex = 3;
+            this.buttonDeleteRule.Text = "Удалить";
+            this.buttonDeleteRule.UseVisualStyleBackColor = true;
+            this.buttonDeleteRule.Click += new System.EventHandler(this.buttonDeleteRule_Click);
+            // 
             // ИзменениеПравилУслуги
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(14F, 29F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(716, 678);
+            this.Controls.Add(this.buttonDeleteRule);
             this.Controls.Add(this.dataGridViewRules);
             this.Controls.Add(this.buttonSaveRules);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
@@ -125,5 +138,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn ConditionValues;
         private System.Windows.Forms.DataGridViewTextBoxColumn OperatorValues;
         private System.Windows.Forms.DataGridViewTextBoxColumn TermOfServiceProvision;
+        private System.Windows.Forms.Button buttonDeleteRule;
     }
 }

@@ -1,8 +1,6 @@
 ﻿using Npgsql;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -140,6 +138,21 @@ namespace gos_uslugi.Repositories
             catch (Exception ex)
             {
                 MessageBox.Show($"Произошла ошибка: {ex.Message}");
+            }
+        }
+        public async Task DeleteServiceRule(long ruleId)
+        {
+            using (NpgsqlConnection connection = new NpgsqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                string sql = "DELETE FROM service_rule WHERE id_service_rule = @ruleId";
+
+                using (NpgsqlCommand command = new NpgsqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@ruleId", ruleId);
+                    await command.ExecuteNonQueryAsync();
+                }
             }
         }
     }

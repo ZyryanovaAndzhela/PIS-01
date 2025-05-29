@@ -94,5 +94,31 @@ namespace gos_uslugi
                 MessageBox.Show($"Неизвестная ошибка: {ex.Message}");
             }
         }
+
+        private async void buttonDeleteRule_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewRules.SelectedRows.Count > 0)
+            {
+                DataGridViewRow selectedRow = dataGridViewRules.SelectedRows[0];
+                long ruleId = (long)selectedRow.Index;
+
+                try
+                {
+                    await _ruleRepository.DeleteServiceRule(ruleId);
+
+                    LoadRules();
+
+                    MessageBox.Show("Правило услуги успешно удалено!");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка при удалении правила услуги: {ex.Message}");
+                }
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите правило услуги для удаления.");
+            }
+        }
     }
 }

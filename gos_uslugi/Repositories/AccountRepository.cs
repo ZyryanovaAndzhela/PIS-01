@@ -53,14 +53,80 @@ namespace gos_uslugi
 
         public async Task<Account> Save(Account account)
         {
-            // сохранение/обновление аккаунта
-            throw new NotImplementedException();
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                // Проверяем, существует ли аккаунт
+                var existingAccount = await FindById(account.Id);
+
+                if (existingAccount == null)
+                {
+                    // Аккаунт не существует - создаем новый
+                    string sql = @"INSERT INTO account (login, full_name, password, role) 
+                               VALUES (@login, @fullName, @password, @role)
+                               RETURNING id_account"; // Возвращает id созданной записи
+                    using (var cmd = new NpgsqlCommand(sql, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@login", account.Login);
+                        cmd.Parameters.AddWithValue("@fullName", account.FullName);
+                        cmd.Parameters.AddWithValue("@password", account.Password);
+                        cmd.Parameters.AddWithValue("@role", account.Role);
+
+                        account.Id = (long)await cmd.ExecuteScalarAsync(); // Получаем ID созданной записи
+                    }
+                }
+                else
+                {
+                    // Аккаунт существует - обновляем
+                    string sql = @"UPDATE account 
+                               SET login = @login,
+                                   full_name = @fullName, 
+                                   password = @password
+                               WHERE id_account = @accountId";
+                    using (var cmd = new NpgsqlCommand(sql, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@accountId", account.Id);
+                        cmd.Parameters.AddWithValue("@login", account.Login);
+                        cmd.Parameters.AddWithValue("@fullName", account.FullName);
+                        cmd.Parameters.AddWithValue("@password", account.Password);
+
+                        await cmd.ExecuteNonQueryAsync();
+                    }
+                }
+            }
+
+            return account;
         }
 
         public async Task<Account> FindById(long accountId)
         {
-            // поиск аккаунта по ID
-            throw new NotImplementedException();
+            Account account = null;
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                string sql = "SELECT id_account, login, full_name, password, role FROM account WHERE id_account = @accountId";
+                using (var cmd = new NpgsqlCommand(sql, connection))
+                {
+                    cmd.Parameters.AddWithValue("@accountId", accountId);
+
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            account = new Account
+                            {
+                                Id = reader.GetInt64(0),
+                                Login = reader.GetString(1),
+                                FullName = reader.GetString(2),
+                                Password = reader.GetString(3),
+                                Role = reader.GetString(4)
+                            };
+                        }
+                    }
+                }
+            }
+            return account;
         }
     }
 }

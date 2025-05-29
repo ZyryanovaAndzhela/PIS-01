@@ -10,6 +10,7 @@ namespace gos_uslugi
         private Account _account;
         private readonly IRequestService _requestService;
         private readonly string _connectionString;
+        private Status _originalStatus;
 
         public РедактированиеЗаявки(Request application, Account account, IRequestService requestService, string connectionString)
         {
@@ -20,6 +21,7 @@ namespace gos_uslugi
             _connectionString = connectionString;
             InitializeStatusComboBox();
             LoadApplicationData();
+            _originalStatus = _request.Status;
         }
 
         private void InitializeStatusComboBox()
@@ -38,7 +40,6 @@ namespace gos_uslugi
             UpdateCompletionDateVisibility();
 
             textBoxResult.Text = _request.Result ?? "";
-            label3.Visible = _request.Status == Status.Завершена;
         }
 
         private void comboBoxStatus_SelectedIndexChanged(object sender, EventArgs e)
@@ -49,20 +50,38 @@ namespace gos_uslugi
         private void UpdateCompletionDateVisibility()
         {
             Status selectedStatus = (Status)comboBoxStatus.SelectedItem;
-            bool isCompleted = selectedStatus == Status.Завершена;
+            bool isCompletedOrRejected = selectedStatus == Status.Завершена || selectedStatus == Status.Отклонено;
 
-            label3.Visible = isCompleted;
-            dateTimePickerCompletionDate.Visible = isCompleted;
+            label3.Visible = isCompletedOrRejected;
+            dateTimePickerCompletionDate.Visible = isCompletedOrRejected;
 
-            if (isCompleted)
+            if (_originalStatus == Status.Создана && selectedStatus == Status.Обрабатывается)
             {
-                dateTimePickerCompletionDate.Checked = true;
-                dateTimePickerCompletionDate.Value = _request.DateCreation;
+                dateTimePickerCompletionDate.Checked = false;
+                _request.DateCompletion = null;
+                Console.WriteLine("Очистка даты завершения (Создана -> Обрабатывается)");
+            }
+
+            if (isCompletedOrRejected)
+            {
+                if (_request.DateCompletion.HasValue)
+                {
+                    dateTimePickerCompletionDate.Checked = true;
+                    dateTimePickerCompletionDate.Value = _request.DateCompletion.Value;
+                    Console.WriteLine($"Отображение существующей даты: Checked = {dateTimePickerCompletionDate.Checked}, Date = {dateTimePickerCompletionDate.Value}");
+                }
+                else
+                {
+                    dateTimePickerCompletionDate.Checked = false;
+                    dateTimePickerCompletionDate.Value = DateTime.Now;
+                    Console.WriteLine("Предлагаем выбрать дату (ранее не было)");
+                }
             }
             else
             {
-                dateTimePickerCompletionDate.Checked = _request.DateCompletion != null;
-                dateTimePickerCompletionDate.Value = _request.DateCompletion ?? DateTime.Now;
+                dateTimePickerCompletionDate.Checked = false;
+                _request.DateCompletion = null;
+                Console.WriteLine("Скрытие и сброс даты завершения");
             }
         }
 
@@ -72,7 +91,17 @@ namespace gos_uslugi
             {
                 _request.Status = (Status)comboBoxStatus.SelectedItem;
                 _request.Result = string.IsNullOrEmpty(textBoxResult.Text) ? null : textBoxResult.Text;
-                _request.DateCompletion = dateTimePickerCompletionDate.Checked ? dateTimePickerCompletionDate.Value : (DateTime?)null;
+
+                if (dateTimePickerCompletionDate.Checked)
+                {
+                    _request.DateCompletion = dateTimePickerCompletionDate.Value;
+                    Console.WriteLine($"Сохранение даты завершения: {_request.DateCompletion}"); // Добавляем логирование
+                }
+                else
+                {
+                    _request.DateCompletion = null;
+                    Console.WriteLine("Сохранение: Дата завершения установлена в NULL"); // Добавляем логирование
+                }
 
                 await _requestService.UpdateAsync(_request);
 

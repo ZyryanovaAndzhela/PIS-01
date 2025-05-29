@@ -15,10 +15,6 @@ namespace gos_uslugi
             _connectionString = connectionString;
             _ruleService = ruleService;
         }
-        public async Task<Service> Save(Service service)
-        {
-            throw new NotImplementedException();
-        }
         public async Task<Service> FindById(long serviceId)
         {
             Service service = null;
@@ -47,10 +43,9 @@ namespace gos_uslugi
                                     Instructions = reader.GetString(4),
                                     Price = reader.GetDecimal(5),
                                     AdministratorId = reader.GetInt64(6),
-                                    Rules = new List<ServiceRule>() // Initialize the Rules list
+                                    Rules = new List<ServiceRule>()
                                 };
 
-                                // Get the service rules
                                 service.Rules = await _ruleService.GetServiceRules(serviceId);
                             }
                         }
@@ -198,28 +193,34 @@ namespace gos_uslugi
         }
         public async Task DeleteService(long serviceId)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
+            using (NpgsqlConnection connection = new NpgsqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
                 using (var transaction = connection.BeginTransaction())
                 {
                     try
                     {
-                        string deleteRequestsQuery = "DELETE FROM request WHERE id_service = @id";
-                        using (NpgsqlCommand commandDeleteRequests = new NpgsqlCommand(deleteRequestsQuery, connection, transaction))
+                        // Определяем запросы
+                        string updateRequestsQuery = "UPDATE request SET id_service = NULL WHERE id_service = @id";
+                        string deleteRulesQuery = "DELETE FROM service_rule WHERE id_service = @id";
+                        string deleteServiceQuery = "DELETE FROM service WHERE id_service = @id";
+
+
+                        // 1. Обновляем id_service в таблице request, устанавливая NULL
+                        using (NpgsqlCommand commandUpdateRequests = new NpgsqlCommand(updateRequestsQuery, connection, transaction))
                         {
-                            commandDeleteRequests.Parameters.AddWithValue("@id", serviceId);
-                            await commandDeleteRequests.ExecuteNonQueryAsync();
+                            commandUpdateRequests.Parameters.AddWithValue("@id", serviceId);
+                            await commandUpdateRequests.ExecuteNonQueryAsync();
                         }
 
-                        string deleteRulesQuery = "DELETE FROM service_rule WHERE id_service = @id";
+                        // 2. Удаляем правила услуги
                         using (NpgsqlCommand commandDeleteRules = new NpgsqlCommand(deleteRulesQuery, connection, transaction))
                         {
                             commandDeleteRules.Parameters.AddWithValue("@id", serviceId);
                             await commandDeleteRules.ExecuteNonQueryAsync();
                         }
 
-                        string deleteServiceQuery = "DELETE FROM service WHERE id_service = @id";
+                        // 3. Удаляем саму услугу
                         using (NpgsqlCommand commandDeleteService = new NpgsqlCommand(deleteServiceQuery, connection, transaction))
                         {
                             commandDeleteService.Parameters.AddWithValue("@id", serviceId);

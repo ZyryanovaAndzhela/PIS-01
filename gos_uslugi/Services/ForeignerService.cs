@@ -40,10 +40,6 @@ namespace gos_uslugi.Services
         {
             return await _foreignerRepository.FindById(foreignerId);
         }
-        public async Task DeleteForeigner(long foreignerId)
-        {
-            await _foreignerRepository.Delete(foreignerId);
-        }
 
         public async Task<Foreigner> RegisterForeigner(Foreigner foreignerData)
         {

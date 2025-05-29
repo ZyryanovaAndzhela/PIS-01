@@ -171,15 +171,15 @@ namespace gos_uslugi.Repositories
                     await connection.OpenAsync();
 
                     string query = @"
-                        SELECT r.id_request, r.id_employee, r.id_foreigner, r.id_service, r.status, r.date_creation, r.date_completion, r.deadline, r.result, s.description
-                        FROM request r
-                        INNER JOIN service s ON r.id_service = s.id_service
-                        LEFT JOIN foreigner f ON r.id_foreigner = f.id_foreigner
-                        LEFT JOIN government_employee ge ON r.id_employee = ge.id_employee
-                        WHERE 
-                            ((@role = 'employee' AND ge.id_account = @accountId) AND (@filterStatus IS NULL OR r.status = @filterStatus))
-                            OR 
-                            ((@role = 'foreigner' AND f.id_account = @accountId) AND (@filterStatus IS NULL OR r.status = @filterStatus))";
+                SELECT r.id_request, r.id_employee, r.id_foreigner, r.id_service, r.status, r.date_creation, r.date_completion, r.deadline, r.result, s.description
+                FROM request r
+                INNER JOIN service s ON r.id_service = s.id_service
+                LEFT JOIN foreigner f ON r.id_foreigner = f.id_foreigner
+                LEFT JOIN government_employee ge ON r.id_employee = ge.id_employee
+                WHERE 
+                    ((@role = 'employee' AND r.id_employee IN (SELECT ge.id_employee FROM government_employee ge WHERE ge.id_account = @accountId)) AND (@filterStatus IS NULL OR r.status = @filterStatus) AND (@search IS NULL OR r.id_request::TEXT ILIKE @search OR s.description ILIKE @search))
+                    OR 
+                    ((@role = 'foreigner' AND f.id_account = @accountId) AND (@filterStatus IS NULL OR r.status = @filterStatus) AND (@search IS NULL OR r.id_request::TEXT ILIKE @search OR s.description ILIKE @search))";
 
                     List<NpgsqlParameter> parameters = new List<NpgsqlParameter>();
                     parameters.Add(new NpgsqlParameter("@accountId", account.Id));
@@ -192,11 +192,10 @@ namespace gos_uslugi.Repositories
                         : filterStatus;
                     parameters.Add(statusParameter);
 
-                    if (!string.IsNullOrEmpty(searchQuery))
-                    {
-                        query += " AND (r.id_request::TEXT ILIKE @search OR s.description ILIKE @search)";
-                        parameters.Add(new NpgsqlParameter("@search", "%" + searchQuery + "%"));
-                    }
+                    // Поиск
+                    NpgsqlParameter searchParameter = new NpgsqlParameter("@search", NpgsqlTypes.NpgsqlDbType.Text);
+                    searchParameter.Value = string.IsNullOrEmpty(searchQuery) ? (object)DBNull.Value : "%" + searchQuery + "%";
+                    parameters.Add(searchParameter);
 
 
                     using (NpgsqlCommand command = new NpgsqlCommand(query, connection))

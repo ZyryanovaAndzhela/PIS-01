@@ -20,7 +20,6 @@ namespace gos_uslugi
     {
         Task<Foreigner> Save(Foreigner foreigner);
         Task<Foreigner> FindById(long foreignerId);
-        Task Delete(long foreignerId);
         Task<Foreigner> GetForeignerByLogin(string login);
     }
 
@@ -34,7 +33,6 @@ namespace gos_uslugi
     public interface IServiceRepository
     {
         Task<List<Service>> SearchServices(string searchQuery);
-        Task<Service> Save(Service service);
         Task<Service> FindById(long serviceId);
         Task<List<GovernmentEmployee>> GetAllEmployees(); 
         Task UpdateService(Service service);
@@ -46,5 +44,6 @@ namespace gos_uslugi
         Task<List<ServiceRule>> GetServiceRules(long serviceId);
         Task<ServiceRule> SaveServiceRule(ServiceRule serviceRule);
         Task UpdateServiceRule(ServiceRule serviceRule);
+        Task DeleteServiceRule(long serviceId);
     }
 }

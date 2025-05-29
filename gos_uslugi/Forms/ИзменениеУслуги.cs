@@ -115,8 +115,8 @@ namespace gos_uslugi
 
         private void buttonEditRules_Click(object sender, EventArgs e)
         {
-            string connectionString = ConfigurationManager.ConnectionString; // Замените на ваш способ получения строки подключения
-            RuleRepository ruleRepository = new RuleRepository(connectionString); //  Создаем экземпляр RuleRepository
+            string connectionString = ConfigurationManager.ConnectionString; 
+            RuleRepository ruleRepository = new RuleRepository(connectionString);
             ИзменениеПравилУслуги editRules = new ИзменениеПравилУслуги(_serviceId, _serviceRepository, ruleRepository);
             this.Hide();
             editRules.ShowDialog();

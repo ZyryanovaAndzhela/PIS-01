@@ -7,14 +7,54 @@ namespace gos_uslugi.Repositories
 {
     public class ForeignerRepository : IForeignerRepository
     {
-        public Task Delete(long foreignerId)
+        public async Task<Foreigner> FindById(long foreignerId)
         {
-            throw new NotImplementedException();
-        }
+            Foreigner foreigner = null;
 
-        public Task<Foreigner> FindById(long foreignerId)
-        {
-            throw new NotImplementedException();
+            using (var connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
+            {
+                await connection.OpenAsync();
+
+                string sql = @"
+            SELECT 
+                a.id_account, a.login, a.full_name, a.password, a.role,
+                f.id_foreigner, f.citizen, f.passport, f.INN, f.purpose_visit, f.date_birth, f.phone_number, f.email
+            FROM account a
+            INNER JOIN foreigner f ON a.id_account = f.id_account
+            WHERE f.id_foreigner = @foreignerId";
+
+                using (var cmd = new NpgsqlCommand(sql, connection))
+                {
+                    cmd.Parameters.AddWithValue("@foreignerId", foreignerId);
+
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            foreigner = new Foreigner
+                            {
+                                // Заполнение свойств Account
+                                Id = reader.GetInt64(reader.GetOrdinal("id_account")), // ID берем из таблицы Account
+                                Login = reader.GetString(reader.GetOrdinal("login")),
+                                FullName = reader.GetString(reader.GetOrdinal("full_name")),
+                                Password = reader.GetString(reader.GetOrdinal("password")),
+                                Role = reader.GetString(reader.GetOrdinal("role")),
+
+                                // Заполнение свойств Foreigner
+                                Citizen = reader.GetString(reader.GetOrdinal("citizen")),
+                                Passport = reader.GetString(reader.GetOrdinal("passport")),
+                                INN = reader.GetString(reader.GetOrdinal("INN")),
+                                PurposeVisit = reader.GetString(reader.GetOrdinal("purpose_visit")),
+                                DateBirth = reader.GetDateTime(reader.GetOrdinal("date_birth")),
+                                PhoneNumber = reader.GetString(reader.GetOrdinal("phone_number")),
+                                Email = reader.GetString(reader.GetOrdinal("email"))
+                            };
+                        }
+                    }
+                }
+
+                return foreigner;
+            }
         }
 
         public async Task<Foreigner> GetForeignerByLogin(string login)
@@ -69,9 +109,69 @@ namespace gos_uslugi.Repositories
             return foreigner;
         }
 
-        public Task<Foreigner> Save(Foreigner foreigner)
+        public async Task<Foreigner> Save(Foreigner foreigner)
         {
-            throw new NotImplementedException();
+            using (var connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
+            {
+                await connection.OpenAsync();
+
+                // Начинаем транзакцию, чтобы обеспечить целостность данных
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        // Обновляем таблицу Account
+                        string sqlAccount = @"
+                        UPDATE account 
+                        SET login = @login, full_name = @fullName, password = @password
+                        WHERE id_account = @accountId";
+
+                        using (var cmdAccount = new NpgsqlCommand(sqlAccount, connection, transaction))
+                        {
+                            cmdAccount.Parameters.AddWithValue("@accountId", foreigner.Id); // Используем Id (id_account)
+                            cmdAccount.Parameters.AddWithValue("@login", foreigner.Login);
+                            cmdAccount.Parameters.AddWithValue("@fullName", foreigner.FullName);
+                            cmdAccount.Parameters.AddWithValue("@password", foreigner.Password);
+
+                            await cmdAccount.ExecuteNonQueryAsync();
+                        }
+
+                        // Обновляем таблицу Foreigner
+                        string sqlForeigner = @"
+                        UPDATE foreigner 
+                        SET citizen = @citizen, passport = @passport, INN = @INN, 
+                            purpose_visit = @purposeVisit, date_birth = @dateBirth, 
+                            phone_number = @phoneNumber, email = @email
+                        WHERE id_account = @accountId";
+
+                        using (var cmdForeigner = new NpgsqlCommand(sqlForeigner, connection, transaction))
+                        {
+                            cmdForeigner.Parameters.AddWithValue("@accountId", foreigner.Id); // Используем Id (id_account)
+                            cmdForeigner.Parameters.AddWithValue("@citizen", foreigner.Citizen);
+                            cmdForeigner.Parameters.AddWithValue("@passport", foreigner.Passport);
+                            cmdForeigner.Parameters.AddWithValue("@INN", foreigner.INN);
+                            cmdForeigner.Parameters.AddWithValue("@purposeVisit", foreigner.PurposeVisit);
+                            cmdForeigner.Parameters.AddWithValue("@dateBirth", foreigner.DateBirth);
+                            cmdForeigner.Parameters.AddWithValue("@phoneNumber", foreigner.PhoneNumber);
+                            cmdForeigner.Parameters.AddWithValue("@email", foreigner.Email);
+
+                            await cmdForeigner.ExecuteNonQueryAsync();
+                        }
+
+                        // Подтверждаем транзакцию
+                        transaction.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        // Откатываем транзакцию в случае ошибки
+                        transaction.Rollback();
+                        Console.WriteLine($"Ошибка при сохранении данных Foreigner: {ex.Message}");
+                        throw; // Перебрасываем исключение для обработки на верхнем уровне
+                    }
+                }
+            }
+
+            return foreigner;
         }
     }
 }
