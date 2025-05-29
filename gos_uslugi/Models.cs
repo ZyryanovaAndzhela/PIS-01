@@ -41,7 +41,7 @@ namespace gos_uslugi
         public long Id { get; set; }
         public long EmployeeId { get; set; }
         public long ForeignerId { get; set; }
-        public long ServiceId { get; set; }
+        public long? ServiceId { get; set; }
         public Status Status { get; set; }
         public DateTime DateCreation { get; set; }
         public DateTime? DateCompletion { get; set; }

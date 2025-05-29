@@ -18,7 +18,7 @@ namespace gos_uslugi.Services
         {
             return await _requestRepository.GetForeignerRequests(account, filterStatus, searchQuery);
         }
-        public async Task<(string EmployeeName, string UserName, string ServiceDescription)> GetRequestDetails(long requestId)
+        public async Task<(string EmployeeName, string ForeignerName, string ServiceDescription)> GetRequestDetails(long requestId)
         {
             return await _requestRepository.GetRequestDetails(requestId);
         }

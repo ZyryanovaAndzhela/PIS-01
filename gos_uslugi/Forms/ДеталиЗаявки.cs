@@ -33,16 +33,16 @@ namespace gos_uslugi
                 {
                     var details = await _requestService.GetRequestDetails(Request.Id);
 
-                    if (details.EmployeeName != null || details.UserName != null || details.ServiceDescription != null)
+                    if (details.EmployeeName != null || details.ForeignerName != null || details.ServiceDescription != null)
                     {
                         labelEmployeeId.Text = "Сотрудник: " + (details.EmployeeName ?? "Не указан");
-                        labelUserId.Text = "Пользователь: " + (details.UserName ?? "Не указан");
+                        labelForeignerId.Text = "Пользователь: " + (details.ForeignerName ?? "Не указан");
                         labelServiceId.Text = "Услуга: " + (details.ServiceDescription ?? "Не указана");
                     }
                     else
                     {
                         labelEmployeeId.Text = "Сотрудник: Не указан";
-                        labelUserId.Text = "Пользователь: Не указан";
+                        labelForeignerId.Text = "Пользователь: Не указан";
                         labelServiceId.Text = "Услуга: Не указана";
                     }
 

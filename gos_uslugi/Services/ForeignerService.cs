@@ -19,21 +19,23 @@ namespace gos_uslugi.Services
         }
         public async Task UpdateForeignerInfo(long accountId, string fullName, string email, string phoneNumber, string inn, string citizen, string passport, string password)
         {
-            var account = await _accountRepository.FindById(accountId);
+            if (await _foreignerRepository.IsEmailAlreadyRegistered(email, accountId))
+            {
+                throw new Exception("Этот email уже зарегистрирован. Пожалуйста, используйте другой email.");
+            }
 
+            var account = await _accountRepository.FindById(accountId);
             account.FullName = fullName;
             account.Password = password;
-
+            account.Login = email;
             await _accountRepository.Save(account);
 
             var foreigner = await _foreignerRepository.FindById(accountId);
-
             foreigner.Email = email;
             foreigner.PhoneNumber = phoneNumber;
             foreigner.INN = inn;
             foreigner.Citizen = citizen;
             foreigner.Passport = passport;
-
             await _foreignerRepository.Save(foreigner);
         }
         public async Task<Foreigner> GetForeignerById(long foreignerId)

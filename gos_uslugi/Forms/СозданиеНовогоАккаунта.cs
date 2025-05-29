@@ -53,7 +53,7 @@ namespace gos_uslugi
 
                     string accountQuery = @"
                         INSERT INTO account (full_name, login, password, role)
-                        VALUES (@fullName, @login, @password, 'user')
+                        VALUES (@fullName, @login, @password, 'foreigner')
                         RETURNING id_account";
 
                     long accountId;
@@ -66,21 +66,21 @@ namespace gos_uslugi
                         accountId = (long)accountCommand.ExecuteScalar(); 
                     }
 
-                    string userQuery = @"
-                        INSERT INTO user (id_account, citizen, passport, INN, purpose_visit, date_birth, phone_number, email)
+                    string foreignerQuery = @"
+                        INSERT INTO foreigner (id_account, citizen, passport, INN, purpose_visit, date_birth, phone_number, email)
                         VALUES (@accountId, @citizen, @passport, @INN, @purposeVisit, @dateBirth, @phoneNumber, @email)";
 
-                    using (NpgsqlCommand userCommand = new NpgsqlCommand(userQuery, connection))
+                    using (NpgsqlCommand foreignerCommand = new NpgsqlCommand(foreignerQuery, connection))
                     {
-                        userCommand.Parameters.AddWithValue("@accountId", accountId);
-                        userCommand.Parameters.AddWithValue("@citizen", citizen);
-                        userCommand.Parameters.AddWithValue("@passport", passport);
-                        userCommand.Parameters.AddWithValue("@INN", inn);
-                        userCommand.Parameters.AddWithValue("@purposeVisit", purposeOfVisit);
-                        userCommand.Parameters.AddWithValue("@dateBirth", dateBirth);
-                        userCommand.Parameters.AddWithValue("@phoneNumber", phoneNumber);
-                        userCommand.Parameters.AddWithValue("@email", email);
-                        userCommand.ExecuteNonQuery();
+                        foreignerCommand.Parameters.AddWithValue("@accountId", accountId);
+                        foreignerCommand.Parameters.AddWithValue("@citizen", citizen);
+                        foreignerCommand.Parameters.AddWithValue("@passport", passport);
+                        foreignerCommand.Parameters.AddWithValue("@INN", inn);
+                        foreignerCommand.Parameters.AddWithValue("@purposeVisit", purposeOfVisit);
+                        foreignerCommand.Parameters.AddWithValue("@dateBirth", dateBirth);
+                        foreignerCommand.Parameters.AddWithValue("@phoneNumber", phoneNumber);
+                        foreignerCommand.Parameters.AddWithValue("@email", email);
+                        foreignerCommand.ExecuteNonQuery();
                     }
 
                     MessageBox.Show("Аккаунт успешно создан!");

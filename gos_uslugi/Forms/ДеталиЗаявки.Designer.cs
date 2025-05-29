@@ -30,7 +30,7 @@
         {
             this.labelID = new System.Windows.Forms.Label();
             this.labelEmployeeId = new System.Windows.Forms.Label();
-            this.labelUserId = new System.Windows.Forms.Label();
+            this.labelForeignerId = new System.Windows.Forms.Label();
             this.labelServiceId = new System.Windows.Forms.Label();
             this.textBoxStatus = new System.Windows.Forms.TextBox();
             this.dateTimePickerCreation = new System.Windows.Forms.DateTimePicker();
@@ -58,14 +58,14 @@
             this.labelEmployeeId.TabIndex = 1;
             this.labelEmployeeId.Text = "labelEmployeeId";
             // 
-            // labelUserId
+            // labelForeignerId
             // 
-            this.labelUserId.AutoSize = true;
-            this.labelUserId.Location = new System.Drawing.Point(59, 177);
-            this.labelUserId.Name = "labelUserId";
-            this.labelUserId.Size = new System.Drawing.Size(137, 29);
-            this.labelUserId.TabIndex = 2;
-            this.labelUserId.Text = "labelUserId";
+            this.labelForeignerId.AutoSize = true;
+            this.labelForeignerId.Location = new System.Drawing.Point(59, 177);
+            this.labelForeignerId.Name = "labelForeignerId";
+            this.labelForeignerId.Size = new System.Drawing.Size(192, 29);
+            this.labelForeignerId.TabIndex = 2;
+            this.labelForeignerId.Text = "labelForeignerId";
             // 
             // labelServiceId
             // 
@@ -140,7 +140,7 @@
             this.Controls.Add(this.dateTimePickerCreation);
             this.Controls.Add(this.textBoxStatus);
             this.Controls.Add(this.labelServiceId);
-            this.Controls.Add(this.labelUserId);
+            this.Controls.Add(this.labelForeignerId);
             this.Controls.Add(this.labelEmployeeId);
             this.Controls.Add(this.labelID);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
@@ -157,7 +157,7 @@
 
         private System.Windows.Forms.Label labelID;
         private System.Windows.Forms.Label labelEmployeeId;
-        private System.Windows.Forms.Label labelUserId;
+        private System.Windows.Forms.Label labelForeignerId;
         private System.Windows.Forms.Label labelServiceId;
         private System.Windows.Forms.TextBox textBoxStatus;
         private System.Windows.Forms.DateTimePicker dateTimePickerCreation;

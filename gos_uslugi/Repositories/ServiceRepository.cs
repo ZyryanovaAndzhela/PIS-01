@@ -200,27 +200,23 @@ namespace gos_uslugi
                 {
                     try
                     {
-                        // Определяем запросы
                         string updateRequestsQuery = "UPDATE request SET id_service = NULL WHERE id_service = @id";
                         string deleteRulesQuery = "DELETE FROM service_rule WHERE id_service = @id";
                         string deleteServiceQuery = "DELETE FROM service WHERE id_service = @id";
 
 
-                        // 1. Обновляем id_service в таблице request, устанавливая NULL
                         using (NpgsqlCommand commandUpdateRequests = new NpgsqlCommand(updateRequestsQuery, connection, transaction))
                         {
                             commandUpdateRequests.Parameters.AddWithValue("@id", serviceId);
                             await commandUpdateRequests.ExecuteNonQueryAsync();
                         }
 
-                        // 2. Удаляем правила услуги
                         using (NpgsqlCommand commandDeleteRules = new NpgsqlCommand(deleteRulesQuery, connection, transaction))
                         {
                             commandDeleteRules.Parameters.AddWithValue("@id", serviceId);
                             await commandDeleteRules.ExecuteNonQueryAsync();
                         }
 
-                        // 3. Удаляем саму услугу
                         using (NpgsqlCommand commandDeleteService = new NpgsqlCommand(deleteServiceQuery, connection, transaction))
                         {
                             commandDeleteService.Parameters.AddWithValue("@id", serviceId);

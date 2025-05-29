@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.listViewApplications = new System.Windows.Forms.ListView();
+            this.listViewRequests = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -40,24 +40,24 @@
             this.buttonCreateRequest = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
-            // listViewApplications
+            // listViewRequests
             // 
-            this.listViewApplications.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.listViewRequests.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1,
             this.columnHeader2,
             this.columnHeader3,
             this.columnHeader5,
             this.columnHeader6});
-            this.listViewApplications.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.listViewApplications.FullRowSelect = true;
-            this.listViewApplications.HideSelection = false;
-            this.listViewApplications.Location = new System.Drawing.Point(12, 72);
-            this.listViewApplications.Name = "listViewApplications";
-            this.listViewApplications.Size = new System.Drawing.Size(916, 653);
-            this.listViewApplications.TabIndex = 0;
-            this.listViewApplications.UseCompatibleStateImageBehavior = false;
-            this.listViewApplications.View = System.Windows.Forms.View.Details;
-            this.listViewApplications.MouseClick += new System.Windows.Forms.MouseEventHandler(this.listViewApplications_MouseClick);
+            this.listViewRequests.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.listViewRequests.FullRowSelect = true;
+            this.listViewRequests.HideSelection = false;
+            this.listViewRequests.Location = new System.Drawing.Point(12, 72);
+            this.listViewRequests.Name = "listViewRequests";
+            this.listViewRequests.Size = new System.Drawing.Size(916, 653);
+            this.listViewRequests.TabIndex = 0;
+            this.listViewRequests.UseCompatibleStateImageBehavior = false;
+            this.listViewRequests.View = System.Windows.Forms.View.Details;
+            this.listViewRequests.MouseClick += new System.Windows.Forms.MouseEventHandler(this.listViewRequests_MouseClick);
             // 
             // columnHeader1
             // 
@@ -133,7 +133,7 @@
             this.Controls.Add(this.buttonApplyFilter);
             this.Controls.Add(this.textBoxSearch);
             this.Controls.Add(this.comboBoxFilterStatus);
-            this.Controls.Add(this.listViewApplications);
+            this.Controls.Add(this.listViewRequests);
             this.Name = "Заявки";
             this.ShowIcon = false;
             this.Text = "Заявки";
@@ -145,7 +145,7 @@
 
         #endregion
 
-        private System.Windows.Forms.ListView listViewApplications;
+        private System.Windows.Forms.ListView listViewRequests;
         private System.Windows.Forms.ColumnHeader columnHeaderID;
         private System.Windows.Forms.ColumnHeader columnHeaderServiceId;
         private System.Windows.Forms.ColumnHeader columnHeaderDateCreation;

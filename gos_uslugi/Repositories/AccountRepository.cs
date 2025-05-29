@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Windows.Forms;
 using Npgsql;
 
@@ -56,16 +55,13 @@ namespace gos_uslugi
             using (var connection = new NpgsqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
-
-                // Проверяем, существует ли аккаунт
                 var existingAccount = await FindById(account.Id);
 
                 if (existingAccount == null)
                 {
-                    // Аккаунт не существует - создаем новый
                     string sql = @"INSERT INTO account (login, full_name, password, role) 
                                VALUES (@login, @fullName, @password, @role)
-                               RETURNING id_account"; // Возвращает id созданной записи
+                               RETURNING id_account";
                     using (var cmd = new NpgsqlCommand(sql, connection))
                     {
                         cmd.Parameters.AddWithValue("@login", account.Login);
@@ -73,12 +69,11 @@ namespace gos_uslugi
                         cmd.Parameters.AddWithValue("@password", account.Password);
                         cmd.Parameters.AddWithValue("@role", account.Role);
 
-                        account.Id = (long)await cmd.ExecuteScalarAsync(); // Получаем ID созданной записи
+                        account.Id = (long)await cmd.ExecuteScalarAsync();
                     }
                 }
                 else
                 {
-                    // Аккаунт существует - обновляем
                     string sql = @"UPDATE account 
                                SET login = @login,
                                    full_name = @fullName, 

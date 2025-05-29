@@ -12,15 +12,15 @@ namespace gos_uslugi
         private readonly string _connectionString;
         private Status _originalStatus;
 
-        public РедактированиеЗаявки(Request application, Account account, IRequestService requestService, string connectionString)
+        public РедактированиеЗаявки(Request request, Account account, IRequestService requestService, string connectionString)
         {
             InitializeComponent();
-            _request = application;
+            _request = request;
             _account = account;
             _requestService = requestService;
             _connectionString = connectionString;
             InitializeStatusComboBox();
-            LoadApplicationData();
+            LoadRequestData();
             _originalStatus = _request.Status;
         }
 
@@ -34,7 +34,7 @@ namespace gos_uslugi
             comboBoxStatus.DropDownStyle = ComboBoxStyle.DropDownList;
         }
 
-        private void LoadApplicationData()
+        private void LoadRequestData()
         {
             comboBoxStatus.SelectedItem = _request.Status;
             UpdateCompletionDateVisibility();
@@ -72,9 +72,10 @@ namespace gos_uslugi
                 }
                 else
                 {
-                    dateTimePickerCompletionDate.Checked = false;
+                    dateTimePickerCompletionDate.Checked = true;
                     dateTimePickerCompletionDate.Value = DateTime.Now;
-                    Console.WriteLine("Предлагаем выбрать дату (ранее не было)");
+                    _request.DateCompletion = DateTime.Now; 
+                    Console.WriteLine("Устанавливаем текущую дату (если ранее не было)");
                 }
             }
             else
@@ -95,12 +96,10 @@ namespace gos_uslugi
                 if (dateTimePickerCompletionDate.Checked)
                 {
                     _request.DateCompletion = dateTimePickerCompletionDate.Value;
-                    Console.WriteLine($"Сохранение даты завершения: {_request.DateCompletion}"); // Добавляем логирование
                 }
                 else
                 {
                     _request.DateCompletion = null;
-                    Console.WriteLine("Сохранение: Дата завершения установлена в NULL"); // Добавляем логирование
                 }
 
                 await _requestService.UpdateAsync(_request);

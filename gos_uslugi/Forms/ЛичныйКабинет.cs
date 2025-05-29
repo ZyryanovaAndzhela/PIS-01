@@ -2,6 +2,7 @@
 using System.Windows.Forms;
 using System.Threading.Tasks;
 using Npgsql;
+using System.Diagnostics;
 
 namespace gos_uslugi
 {
@@ -10,6 +11,7 @@ namespace gos_uslugi
         private readonly Account _account;
         private readonly IForeignerService _foreignerService;
         private readonly IAccountRepository _accountRepository;
+        private readonly IForeignerRepository _foreignerRepository;
 
         private string _originalPassword;
         private string _originalFullName;
@@ -29,11 +31,11 @@ namespace gos_uslugi
             _foreignerService = foreignerService;
             _accountRepository = accountRepository;
 
-            LoadUserDataAsync();
+            LoadForeignerDataAsync();
             InitializeReadOnlyState();
         }
 
-        private async Task LoadUserDataAsync()
+        private async Task LoadForeignerDataAsync()
         {
             try
             {
@@ -160,11 +162,11 @@ namespace gos_uslugi
 
         private async void button3_Click(object sender, EventArgs e)
         {
+            await SaveForeignerDataAsync();
             textBoxPassword_Leave(textBoxPassword, EventArgs.Empty);
-            await SaveUserDataAsync();
         }
 
-        private async Task SaveUserDataAsync()
+        private async Task SaveForeignerDataAsync()
         {
             try
             {
@@ -208,7 +210,7 @@ namespace gos_uslugi
         {
             if (!char.IsDigit(e.KeyChar) && e.KeyChar != (char)Keys.Back)
             {
-                e.Handled = true; 
+                e.Handled = true;
             }
 
             if (textBox3.Text.Length >= 10 && e.KeyChar != (char)Keys.Back)
@@ -226,7 +228,7 @@ namespace gos_uslugi
 
             if (textBox4.Text.Length >= 12 && e.KeyChar != (char)Keys.Back)
             {
-                e.Handled = true; 
+                e.Handled = true;
             }
         }
 

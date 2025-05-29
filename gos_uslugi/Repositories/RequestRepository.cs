@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Npgsql;
-using NpgsqlTypes;
 
 namespace gos_uslugi.Repositories
 {
@@ -18,9 +17,9 @@ namespace gos_uslugi.Repositories
             _connectionString = connectionString;
         }
 
-        public async Task<(string EmployeeName, string UserName, string ServiceDescription)> GetRequestDetails(long requestId)
+        public async Task<(string EmployeeName, string ForeignerName, string ServiceDescription)> GetRequestDetails(long requestId)
         {
-            (string EmployeeName, string UserName, string ServiceDescription) details = (null, null, null);
+            (string EmployeeName, string ForeignerName, string ServiceDescription) details = (null, null, null);
 
             try
             {
@@ -34,7 +33,7 @@ namespace gos_uslugi.Repositories
                                 WHEN r.id_foreigner IS NOT NULL THEN a_usr.full_name
                                 WHEN r.id_employee IS NOT NULL THEN a_emp.full_name
                                 ELSE NULL
-                            END AS UserName,
+                            END AS ForeignerName,
                             a_emp.full_name AS EmployeeName,
                             s.description AS ServiceDescription
                         FROM request r
@@ -70,7 +69,7 @@ namespace gos_uslugi.Repositories
 
             return details;
         }
-
+        
         public async Task<Request> Save(Request request)
         {
             using (var connection = new NpgsqlConnection(_connectionString))
@@ -171,28 +170,26 @@ namespace gos_uslugi.Repositories
                     await connection.OpenAsync();
 
                     string query = @"
-                SELECT r.id_request, r.id_employee, r.id_foreigner, r.id_service, r.status, r.date_creation, r.date_completion, r.deadline, r.result, s.description
-                FROM request r
-                INNER JOIN service s ON r.id_service = s.id_service
-                LEFT JOIN foreigner f ON r.id_foreigner = f.id_foreigner
-                LEFT JOIN government_employee ge ON r.id_employee = ge.id_employee
-                WHERE 
-                    ((@role = 'employee' AND r.id_employee IN (SELECT ge.id_employee FROM government_employee ge WHERE ge.id_account = @accountId)) AND (@filterStatus IS NULL OR r.status = @filterStatus) AND (@search IS NULL OR r.id_request::TEXT ILIKE @search OR s.description ILIKE @search))
-                    OR 
-                    ((@role = 'foreigner' AND f.id_account = @accountId) AND (@filterStatus IS NULL OR r.status = @filterStatus) AND (@search IS NULL OR r.id_request::TEXT ILIKE @search OR s.description ILIKE @search))";
+SELECT r.id_request, r.id_employee, r.id_foreigner, r.id_service, r.status, r.date_creation, r.date_completion, r.deadline, r.result, s.description
+FROM request r
+LEFT JOIN service s ON r.id_service = s.id_service
+LEFT JOIN foreigner f ON r.id_foreigner = f.id_foreigner
+LEFT JOIN government_employee ge ON r.id_employee = ge.id_employee
+WHERE 
+    ((@role = 'employee' AND r.id_employee IN (SELECT ge.id_employee FROM government_employee ge WHERE ge.id_account = @accountId)) AND (@filterStatus IS NULL OR r.status = @filterStatus) AND (@search IS NULL OR r.id_request::TEXT ILIKE @search OR s.description ILIKE @search))
+    OR 
+    ((@role = 'foreigner' AND f.id_account = @accountId) AND (@filterStatus IS NULL OR r.status = @filterStatus) AND (@search IS NULL OR r.id_request::TEXT ILIKE @search OR s.description ILIKE @search))";
 
                     List<NpgsqlParameter> parameters = new List<NpgsqlParameter>();
                     parameters.Add(new NpgsqlParameter("@accountId", account.Id));
                     parameters.Add(new NpgsqlParameter("@role", account.Role));
 
-                    // Фильтр по статусу
                     NpgsqlParameter statusParameter = new NpgsqlParameter("@filterStatus", NpgsqlTypes.NpgsqlDbType.Text);
                     statusParameter.Value = string.IsNullOrEmpty(filterStatus) || filterStatus == "Все"
                         ? (object)DBNull.Value
                         : filterStatus;
                     parameters.Add(statusParameter);
 
-                    // Поиск
                     NpgsqlParameter searchParameter = new NpgsqlParameter("@search", NpgsqlTypes.NpgsqlDbType.Text);
                     searchParameter.Value = string.IsNullOrEmpty(searchQuery) ? (object)DBNull.Value : "%" + searchQuery + "%";
                     parameters.Add(searchParameter);
@@ -201,17 +198,17 @@ namespace gos_uslugi.Repositories
                     using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
                     {
                         command.Parameters.AddRange(parameters.ToArray());
-
                         using (NpgsqlDataReader reader = await command.ExecuteReaderAsync())
-                        {
+                        {  
                             while (await reader.ReadAsync())
                             {
+                                long? serviceId = reader["id_service"] == DBNull.Value ? null : (long?)reader.GetInt64(reader.GetOrdinal("id_service"));
                                 Request request = new Request
                                 {
                                     Id = reader.GetInt64(0),
                                     EmployeeId = reader.GetInt64(1),
                                     ForeignerId = reader.GetInt64(2),
-                                    ServiceId = reader.GetInt64(3),
+                                    ServiceId = serviceId,
                                     Status = (Status)Enum.Parse(typeof(Status), reader.GetString(4)),
                                     DateCreation = reader.GetDateTime(5),
                                     DateCompletion = reader.IsDBNull(6) ? (DateTime?)null : reader.GetDateTime(6),
@@ -219,6 +216,7 @@ namespace gos_uslugi.Repositories
                                     Result = reader.IsDBNull(8) ? null : reader.GetString(8)
                                 };
                                 requests.Add(request);
+                                
                             }
                         }
                     }
@@ -392,7 +390,6 @@ namespace gos_uslugi.Repositories
                                 foreigner = new Foreigner
                                 {
                                     Id = reader.GetInt64(0),
-                                    //IdAccount = reader.GetInt64(1),
                                     Citizen = reader.GetString(2),
                                     Passport = reader.GetString(3),
                                     INN = reader.GetString(4),

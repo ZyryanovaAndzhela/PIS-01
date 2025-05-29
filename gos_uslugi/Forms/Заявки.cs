@@ -39,7 +39,7 @@ namespace gos_uslugi
 
         private async Task LoadForeignerRequestsAsync()
         {
-            listViewApplications.Items.Clear();
+            listViewRequests.Items.Clear();
             _request.Clear();
 
             try
@@ -49,18 +49,18 @@ namespace gos_uslugi
 
                 _request = await _requestService.GetForeignerRequests(_account, filterStatus, searchQuery);
 
-                foreach (Request application in _request)
+                foreach (Request request in _request)
                 {
-                    string serviceName = await GetServiceName(application.ServiceId);
+                    string serviceName = await GetServiceName(request.ServiceId);
 
-                    ListViewItem item = new ListViewItem(application.Id.ToString()); 
+                    ListViewItem item = new ListViewItem(request.Id.ToString());
                     item.SubItems.Add(serviceName);
-                    item.SubItems.Add(application.DateCreation.ToShortDateString()); 
-                    string dateCompletion = application.DateCompletion.HasValue ? application.DateCompletion.Value.ToShortDateString() : "";
+                    item.SubItems.Add(request.DateCreation.ToShortDateString());
+                    string dateCompletion = request.DateCompletion.HasValue ? request.DateCompletion.Value.ToShortDateString() : "";
                     item.SubItems.Add(dateCompletion);
-                    item.SubItems.Add(application.Status.ToString());
-                    item.Tag = application;
-                    listViewApplications.Items.Add(item);
+                    item.SubItems.Add(request.Status.ToString());
+                    item.Tag = request;
+                    listViewRequests.Items.Add(item);
                 }
             }
             catch (Exception ex)
@@ -68,38 +68,26 @@ namespace gos_uslugi
                 MessageBox.Show($"Ошибка загрузки заявок: {ex.Message}");
             }
         }
-        private async Task<string> GetServiceName(long serviceId)
+        private async Task<string> GetServiceName(long? serviceId)
         {
+            if (!serviceId.HasValue)
+            {
+                return "Удалена"; 
+            }
+
             try
             {
                 RuleRepository ruleRepository = new RuleRepository(ConfigurationManager.ConnectionString);
                 RuleService ruleService = new RuleService(ruleRepository);
                 IServiceRepository serviceRepository = new ServiceRepository(ConfigurationManager.ConnectionString, ruleService);
-                Service service = await serviceRepository.FindById(serviceId);
-                return service?.Description ?? "Описание не найдено";
+                Service service = await serviceRepository.FindById(serviceId.Value);
+
+                return service.Description;
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка получения названия услуги: {ex.Message}");
                 return "Ошибка получения названия";
-            }
-        }
-        private void listViewApplications_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (listViewApplications.SelectedItems.Count > 0)
-            {
-                ListViewItem selectedItem = listViewApplications.SelectedItems[0];
-                Request selectedApplication = selectedItem.Tag as Request;
-
-                if (selectedApplication != null)
-                {
-                    IRequestService requestService = new RequestService(new RequestRepository(ConfigurationManager.ConnectionString));
-                    string connectionString = ConfigurationManager.ConnectionString;
-                    ДеталиЗаявки detailsForm = new ДеталиЗаявки(selectedApplication, _account, requestService, connectionString);
-                    this.Hide();
-                    detailsForm.ShowDialog();
-                    this.Show();
-                }
             }
         }
 
@@ -127,6 +115,25 @@ namespace gos_uslugi
             catch (Exception ex)
             {
                 MessageBox.Show($"Произошла ошибка: {ex.Message}\n{ex.StackTrace}");
+            }
+        }
+
+        private void listViewRequests_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (listViewRequests.SelectedItems.Count > 0)
+            {
+                ListViewItem selectedItem = listViewRequests.SelectedItems[0];
+                Request selectedRequest = selectedItem.Tag as Request;
+
+                if (selectedRequest != null)
+                {
+                    IRequestService requestService = new RequestService(new RequestRepository(ConfigurationManager.ConnectionString));
+                    string connectionString = ConfigurationManager.ConnectionString;
+                    ДеталиЗаявки detailsForm = new ДеталиЗаявки(selectedRequest, _account, requestService, connectionString);
+                    this.Hide();
+                    detailsForm.ShowDialog();
+                    this.Show();
+                }
             }
         }
     }

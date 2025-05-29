@@ -16,12 +16,12 @@ namespace gos_uslugi.Repositories
                 await connection.OpenAsync();
 
                 string sql = @"
-            SELECT 
-                a.id_account, a.login, a.full_name, a.password, a.role,
-                f.id_foreigner, f.citizen, f.passport, f.INN, f.purpose_visit, f.date_birth, f.phone_number, f.email
-            FROM account a
-            INNER JOIN foreigner f ON a.id_account = f.id_account
-            WHERE f.id_foreigner = @foreignerId";
+                    SELECT 
+                        a.id_account, a.login, a.full_name, a.password, a.role,
+                        f.id_foreigner, f.citizen, f.passport, f.INN, f.purpose_visit, f.date_birth, f.phone_number, f.email
+                    FROM account a
+                    INNER JOIN foreigner f ON a.id_account = f.id_account
+                    WHERE f.id_foreigner = @foreignerId";
 
                 using (var cmd = new NpgsqlCommand(sql, connection))
                 {
@@ -33,14 +33,12 @@ namespace gos_uslugi.Repositories
                         {
                             foreigner = new Foreigner
                             {
-                                // Заполнение свойств Account
-                                Id = reader.GetInt64(reader.GetOrdinal("id_account")), // ID берем из таблицы Account
+                                Id = reader.GetInt64(reader.GetOrdinal("id_account")),
                                 Login = reader.GetString(reader.GetOrdinal("login")),
                                 FullName = reader.GetString(reader.GetOrdinal("full_name")),
                                 Password = reader.GetString(reader.GetOrdinal("password")),
                                 Role = reader.GetString(reader.GetOrdinal("role")),
 
-                                // Заполнение свойств Foreigner
                                 Citizen = reader.GetString(reader.GetOrdinal("citizen")),
                                 Passport = reader.GetString(reader.GetOrdinal("passport")),
                                 INN = reader.GetString(reader.GetOrdinal("INN")),
@@ -56,7 +54,29 @@ namespace gos_uslugi.Repositories
                 return foreigner;
             }
         }
+        public async Task<bool> IsEmailAlreadyRegistered(string email, long currentAccountId)
+        {
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
+            {
+                await connection.OpenAsync();
 
+                string sqlQuery = @"
+                    SELECT EXISTS (
+                        SELECT 1
+                        FROM foreigner
+                        WHERE email = @email AND id_account != @currentAccountId
+                    );";
+
+                using (NpgsqlCommand command = new NpgsqlCommand(sqlQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@email", email);
+                    command.Parameters.AddWithValue("@currentAccountId", currentAccountId);
+
+                    bool exists = (bool)await command.ExecuteScalarAsync();
+                    return exists;
+                }
+            }
+        }
         public async Task<Foreigner> GetForeignerByLogin(string login)
         {
             string sqlQuery = @"
@@ -115,12 +135,10 @@ namespace gos_uslugi.Repositories
             {
                 await connection.OpenAsync();
 
-                // Начинаем транзакцию, чтобы обеспечить целостность данных
                 using (var transaction = connection.BeginTransaction())
                 {
                     try
                     {
-                        // Обновляем таблицу Account
                         string sqlAccount = @"
                         UPDATE account 
                         SET login = @login, full_name = @fullName, password = @password
@@ -128,7 +146,7 @@ namespace gos_uslugi.Repositories
 
                         using (var cmdAccount = new NpgsqlCommand(sqlAccount, connection, transaction))
                         {
-                            cmdAccount.Parameters.AddWithValue("@accountId", foreigner.Id); // Используем Id (id_account)
+                            cmdAccount.Parameters.AddWithValue("@accountId", foreigner.Id);
                             cmdAccount.Parameters.AddWithValue("@login", foreigner.Login);
                             cmdAccount.Parameters.AddWithValue("@fullName", foreigner.FullName);
                             cmdAccount.Parameters.AddWithValue("@password", foreigner.Password);
@@ -136,7 +154,6 @@ namespace gos_uslugi.Repositories
                             await cmdAccount.ExecuteNonQueryAsync();
                         }
 
-                        // Обновляем таблицу Foreigner
                         string sqlForeigner = @"
                         UPDATE foreigner 
                         SET citizen = @citizen, passport = @passport, INN = @INN, 
@@ -146,7 +163,7 @@ namespace gos_uslugi.Repositories
 
                         using (var cmdForeigner = new NpgsqlCommand(sqlForeigner, connection, transaction))
                         {
-                            cmdForeigner.Parameters.AddWithValue("@accountId", foreigner.Id); // Используем Id (id_account)
+                            cmdForeigner.Parameters.AddWithValue("@accountId", foreigner.Id); 
                             cmdForeigner.Parameters.AddWithValue("@citizen", foreigner.Citizen);
                             cmdForeigner.Parameters.AddWithValue("@passport", foreigner.Passport);
                             cmdForeigner.Parameters.AddWithValue("@INN", foreigner.INN);
@@ -158,15 +175,13 @@ namespace gos_uslugi.Repositories
                             await cmdForeigner.ExecuteNonQueryAsync();
                         }
 
-                        // Подтверждаем транзакцию
                         transaction.Commit();
                     }
                     catch (Exception ex)
                     {
-                        // Откатываем транзакцию в случае ошибки
                         transaction.Rollback();
                         Console.WriteLine($"Ошибка при сохранении данных Foreigner: {ex.Message}");
-                        throw; // Перебрасываем исключение для обработки на верхнем уровне
+                        throw;
                     }
                 }
             }

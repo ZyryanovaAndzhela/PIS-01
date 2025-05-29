@@ -8,7 +8,7 @@ namespace gos_uslugi
         Task UpdateRequest(Request request);
         Task UpdateAsync(Request request);
         Task<List<Request>> GetForeignerRequests(Account account, string filterStatus, string searchQuery);
-        Task<(string EmployeeName, string UserName, string ServiceDescription)> GetRequestDetails(long requestId);
+        Task<(string EmployeeName, string ForeignerName, string ServiceDescription)> GetRequestDetails(long requestId);
     }
 
     public interface IForeignerService

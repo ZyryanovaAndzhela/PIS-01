@@ -13,7 +13,7 @@ namespace gos_uslugi
         Task<Foreigner> GetForeignerByAccountId(long accountId);
         Task<List<ServiceRule>> GetServiceRules(long serviceId, string citizen, string purposeVisit);
         Task<List<Request>> GetForeignerRequests(Account account, string filterStatus, string searchQuery);
-        Task<(string EmployeeName, string UserName, string ServiceDescription)> GetRequestDetails(long requestId);
+        Task<(string EmployeeName, string ForeignerName, string ServiceDescription)> GetRequestDetails(long requestId);
     }
 
     public interface IForeignerRepository
@@ -21,6 +21,7 @@ namespace gos_uslugi
         Task<Foreigner> Save(Foreigner foreigner);
         Task<Foreigner> FindById(long foreignerId);
         Task<Foreigner> GetForeignerByLogin(string login);
+        Task<bool> IsEmailAlreadyRegistered(string email, long currentAccountId);
     }
 
     public interface IAccountRepository

@@ -1,7 +1,6 @@
 ﻿using gos_uslugi.Repositories;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace gos_uslugi
@@ -97,7 +96,8 @@ namespace gos_uslugi
 
         private async void buttonDelete_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("Вы уверены, что хотите удалить эту услугу?", "Подтверждение удаления", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+            if (MessageBox.Show("Вы уверены, что хотите удалить эту услугу?", "Подтверждение удаления", 
+                MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
             {
                 try
                 {

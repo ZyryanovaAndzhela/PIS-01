@@ -12,6 +12,7 @@ namespace gos_uslugi
         private readonly Account _account;
         private readonly IForeignerRepository _foreignerRepository;
         private readonly IAuthenticationService _authenticationService;
+        string connectionString = "Server=localhost;Port=5433;Database=gos_uslugi;Username=postgres;Password=9943;";
         public ГлавноеМеню(Account account, IForeignerRepository foreignerRepository, IAuthenticationService authenticationService)
         {
             InitializeComponent();
@@ -47,7 +48,6 @@ namespace gos_uslugi
 
         private async void button3_Click(object sender, EventArgs e)
         {
-            string connectionString = "Server=localhost;Port=5433;Database=gos_uslugi;Username=postgres;Password=9943;";
             Foreigner foreigner = await _foreignerRepository.GetForeignerByLogin(_account.Login);
             IRequestRepository requestRepository = new RequestRepository(connectionString);
             IRequestService requestService = new RequestService(requestRepository);
