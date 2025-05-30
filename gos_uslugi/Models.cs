@@ -39,7 +39,6 @@ namespace gos_uslugi
     public class Request
     {
         public long Id { get; set; }
-        public long EmployeeId { get; set; }
         public long ForeignerId { get; set; }
         public long? ServiceId { get; set; }
         public Status Status { get; set; }

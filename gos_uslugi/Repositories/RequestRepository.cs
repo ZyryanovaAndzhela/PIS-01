@@ -28,21 +28,20 @@ namespace gos_uslugi.Repositories
                     await connection.OpenAsync();
 
                     string query = @"
-                        SELECT
-                            CASE
-                                WHEN r.id_foreigner IS NOT NULL THEN a_usr.full_name
-                                WHEN r.id_employee IS NOT NULL THEN a_emp.full_name
-                                ELSE NULL
-                            END AS ForeignerName,
-                            a_emp.full_name AS EmployeeName,
-                            s.description AS ServiceDescription
-                        FROM request r
-                        LEFT JOIN government_employee ge ON r.id_employee = ge.id_employee
-                        LEFT JOIN account a_emp ON ge.id_account = a_emp.id_account
-                        LEFT JOIN foreigner f ON r.id_foreigner = f.id_foreigner
-                        LEFT JOIN account a_usr ON f.id_account = a_usr.id_account
-                        LEFT JOIN service s ON r.id_service = s.id_service
-                        WHERE r.id_request = @requestId";
+                       SELECT
+                           CASE
+                               WHEN r.id_foreigner IS NOT NULL THEN a_usr.full_name
+                               ELSE NULL
+                           END AS ForeignerName,
+                           a_emp.full_name AS EmployeeName,
+                           s.description AS ServiceDescription 
+                       FROM request r
+                       LEFT JOIN service s ON r.id_service = s.id_service 
+                       LEFT JOIN government_employee ge ON s.id_employee = ge.id_employee
+                       LEFT JOIN account a_emp ON ge.id_account = a_emp.id_account
+                       LEFT JOIN foreigner f ON r.id_foreigner = f.id_foreigner
+                       LEFT JOIN account a_usr ON f.id_account = a_usr.id_account
+                       WHERE r.id_request = @requestId";
 
                     using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
                     {
@@ -53,9 +52,9 @@ namespace gos_uslugi.Repositories
                             if (await reader.ReadAsync())
                             {
                                 details = (
-                                    reader.IsDBNull(1) ? null : reader.GetString(1),
-                                    reader.IsDBNull(0) ? null : reader.GetString(0),
-                                    reader.IsDBNull(2) ? null : reader.GetString(2)
+                                    reader.IsDBNull(reader.GetOrdinal("EmployeeName")) ? null : reader.GetString(reader.GetOrdinal("EmployeeName")), 
+                                    reader.IsDBNull(reader.GetOrdinal("ForeignerName")) ? null : reader.GetString(reader.GetOrdinal("ForeignerName")), 
+                                    reader.IsDBNull(reader.GetOrdinal("ServiceDescription")) ? null : reader.GetString(reader.GetOrdinal("ServiceDescription")) 
                                 );
                             }
                         }
@@ -69,7 +68,7 @@ namespace gos_uslugi.Repositories
 
             return details;
         }
-        
+
         public async Task<Request> Save(Request request)
         {
             using (var connection = new NpgsqlConnection(_connectionString))
@@ -81,7 +80,6 @@ namespace gos_uslugi.Repositories
                             RETURNING id_request;";
                 using (var cmd = new NpgsqlCommand(sql, connection))
                 {
-                    cmd.Parameters.AddWithValue("EmployeeId", request.EmployeeId);
                     cmd.Parameters.AddWithValue("ForeignerId", request.ForeignerId);
                     cmd.Parameters.AddWithValue("ServiceId", request.ServiceId);
                     cmd.Parameters.AddWithValue("Status", request.Status.ToString());
@@ -129,7 +127,7 @@ namespace gos_uslugi.Repositories
             using (var connection = new NpgsqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
-                var sql = "SELECT id, employeeid, foreignerid, serviceid, status, datecreation, datecompletion, deadline, result FROM request WHERE id = @RequestId";
+                var sql = "SELECT id, foreignerid, serviceid, status, datecreation, datecompletion, deadline, result FROM request WHERE id = @RequestId";
                 using (var cmd = new NpgsqlCommand(sql, connection))
                 {
                     cmd.Parameters.AddWithValue("RequestId", requestId);
@@ -141,7 +139,6 @@ namespace gos_uslugi.Repositories
                             request = new Request()
                             {
                                 Id = (long)reader["id"],
-                                EmployeeId = (long)reader["employeeid"],
                                 ForeignerId = (long)reader["foreignerid"],
                                 ServiceId = (long)reader["serviceid"],
                                 Status = (Status)Enum.Parse(typeof(Status), (string)reader["status"]),
@@ -165,24 +162,46 @@ namespace gos_uslugi.Repositories
 
             try
             {
+                string query = "";
                 using (NpgsqlConnection connection = new NpgsqlConnection(_connectionString))
                 {
                     await connection.OpenAsync();
 
-                    string query = @"
-SELECT r.id_request, r.id_employee, r.id_foreigner, r.id_service, r.status, r.date_creation, r.date_completion, r.deadline, r.result, s.description
-FROM request r
-LEFT JOIN service s ON r.id_service = s.id_service
-LEFT JOIN foreigner f ON r.id_foreigner = f.id_foreigner
-LEFT JOIN government_employee ge ON r.id_employee = ge.id_employee
-WHERE 
-    ((@role = 'employee' AND r.id_employee IN (SELECT ge.id_employee FROM government_employee ge WHERE ge.id_account = @accountId)) AND (@filterStatus IS NULL OR r.status = @filterStatus) AND (@search IS NULL OR r.id_request::TEXT ILIKE @search OR s.description ILIKE @search))
-    OR 
-    ((@role = 'foreigner' AND f.id_account = @accountId) AND (@filterStatus IS NULL OR r.status = @filterStatus) AND (@search IS NULL OR r.id_request::TEXT ILIKE @search OR s.description ILIKE @search))";
+                    if (account.Role == "employee")
+                    {
+                        query = @"
+                            SELECT r.id_request, s.id_employee, r.id_foreigner, r.id_service, r.status, r.date_creation, r.date_completion, r.deadline,
+                                r.result, s.description
+                            FROM request r
+                            JOIN service s ON r.id_service = s.id_service
+                            JOIN government_employee ge ON s.id_employee = ge.id_employee
+                            WHERE
+                                ge.id_account = @accountId 
+                                AND (@filterStatus IS NULL OR r.status = @filterStatus)
+                                AND (@search IS NULL OR r.id_request::TEXT ILIKE @search OR s.description ILIKE @search);
+                             ";
+                    }
+                    else if (account.Role == "foreigner")
+                    {
+                        query = @"
+                            SELECT r.id_request, s.id_employee, r.id_foreigner, r.id_service, r.status, r.date_creation, r.date_completion,
+                                r.deadline, r.result, s.description
+                            FROM request r
+                            JOIN service s ON r.id_service = s.id_service
+                            JOIN foreigner f ON r.id_foreigner = f.id_foreigner
+                            WHERE
+                                f.id_account = @accountId  
+                                AND (@filterStatus IS NULL OR r.status = @filterStatus)
+                                AND (@search IS NULL OR r.id_request::TEXT ILIKE @search OR s.description ILIKE @search);
+                            ";
+                    }
+                    else
+                    {
+                        return requests;
+                    }
 
                     List<NpgsqlParameter> parameters = new List<NpgsqlParameter>();
                     parameters.Add(new NpgsqlParameter("@accountId", account.Id));
-                    parameters.Add(new NpgsqlParameter("@role", account.Role));
 
                     NpgsqlParameter statusParameter = new NpgsqlParameter("@filterStatus", NpgsqlTypes.NpgsqlDbType.Text);
                     statusParameter.Value = string.IsNullOrEmpty(filterStatus) || filterStatus == "Все"
@@ -194,37 +213,35 @@ WHERE
                     searchParameter.Value = string.IsNullOrEmpty(searchQuery) ? (object)DBNull.Value : "%" + searchQuery + "%";
                     parameters.Add(searchParameter);
 
-
                     using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
                     {
                         command.Parameters.AddRange(parameters.ToArray());
                         using (NpgsqlDataReader reader = await command.ExecuteReaderAsync())
-                        {  
+                        {
                             while (await reader.ReadAsync())
                             {
                                 long? serviceId = reader["id_service"] == DBNull.Value ? null : (long?)reader.GetInt64(reader.GetOrdinal("id_service"));
+
                                 Request request = new Request
                                 {
-                                    Id = reader.GetInt64(0),
-                                    EmployeeId = reader.GetInt64(1),
-                                    ForeignerId = reader.GetInt64(2),
+                                    Id = reader.GetInt64(reader.GetOrdinal("id_request")),
+                                    ForeignerId = reader.GetInt64(reader.GetOrdinal("id_foreigner")),
                                     ServiceId = serviceId,
-                                    Status = (Status)Enum.Parse(typeof(Status), reader.GetString(4)),
-                                    DateCreation = reader.GetDateTime(5),
-                                    DateCompletion = reader.IsDBNull(6) ? (DateTime?)null : reader.GetDateTime(6),
-                                    Deadline = reader.GetString(7),
-                                    Result = reader.IsDBNull(8) ? null : reader.GetString(8)
+                                    Status = (Status)Enum.Parse(typeof(Status), reader.GetString(reader.GetOrdinal("status"))),
+                                    DateCreation = reader.GetDateTime(reader.GetOrdinal("date_creation")),
+                                    DateCompletion = reader.IsDBNull(reader.GetOrdinal("date_completion")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("date_completion")),
+                                    Deadline = reader.GetString(reader.GetOrdinal("deadline")),
+                                    Result = reader.IsDBNull(reader.GetOrdinal("result")) ? null : reader.GetString(reader.GetOrdinal("result"))
                                 };
                                 requests.Add(request);
-                                
                             }
                         }
                     }
                 }
             }
-            catch (NpgsqlException ex)
+            catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка подключения: {ex.Message}");
+                Console.WriteLine($"Ошибка при получении заявок: {ex.Message}");
             }
 
             return requests;
@@ -419,13 +436,12 @@ WHERE
                 await connection.OpenAsync();
 
                 string sql = @"
-                INSERT INTO request (id_employee, id_foreigner, id_service, status, date_creation, date_completion, deadline, result)
-                VALUES (@EmployeeId, @ForeignerId, @ServiceId, @Status, @DateCreation, @DateCompletion, @Deadline, @Result);
-            ";
+            INSERT INTO request (id_foreigner, id_service, status, date_creation, date_completion, deadline, result)
+            VALUES (@ForeignerId, @ServiceId, @Status, @DateCreation, @DateCompletion, @Deadline, @Result);
+        ";
 
                 using (NpgsqlCommand command = new NpgsqlCommand(sql, connection))
                 {
-                    command.Parameters.AddWithValue("@EmployeeId", request.EmployeeId);
                     command.Parameters.AddWithValue("@ForeignerId", request.ForeignerId);
                     command.Parameters.AddWithValue("@ServiceId", request.ServiceId);
                     command.Parameters.AddWithValue("@Status", request.Status.ToString());

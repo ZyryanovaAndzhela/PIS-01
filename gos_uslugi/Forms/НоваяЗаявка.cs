@@ -165,7 +165,6 @@ namespace gos_uslugi
 
                 Request newRequest = new Request
                 {
-                    EmployeeId = employeeId,
                     ForeignerId = foreignerId,
                     ServiceId = serviceId,
                     Status = status,
