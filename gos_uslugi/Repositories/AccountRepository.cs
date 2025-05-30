@@ -8,7 +8,10 @@ namespace gos_uslugi
     {
         private readonly string _connectionString = "Server=localhost;Port=5433;Database=gos_uslugi;Username=postgres;Password=9943;";
 
-        public AccountRepository() { }
+        public AccountRepository(string connectionString)
+        {
+            _connectionString = connectionString;
+        }
 
         public async Task<Account> FindByLogin(string login)
         {

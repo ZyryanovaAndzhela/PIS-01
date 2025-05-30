@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Npgsql;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -93,7 +93,31 @@ namespace gos_uslugi
         {
             await LoadServiceRules();
         }
+        private async Task<long> GetEmployeeIdByServiceId(long serviceId)
+        {
+            using (NpgsqlConnection connection = new NpgsqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
 
+                string sql = @"SELECT id_employee FROM service WHERE id_service = @serviceId";
+
+                using (NpgsqlCommand command = new NpgsqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@serviceId", serviceId);
+
+                    object result = await command.ExecuteScalarAsync();
+
+                    if (result != null && result != DBNull.Value)
+                    {
+                        return (long)result;
+                    }
+                    else
+                    {
+                        throw new Exception($"Для услуги с ID {serviceId} не указан ответственный сотрудник.");
+                    }
+                }
+            }
+        }
         private async void buttonCreate_Click(object sender, EventArgs e)
         {
             try
@@ -110,9 +134,9 @@ namespace gos_uslugi
                     return;
                 }
 
-                long employeeId = _account.Id;
                 long foreignerId = _foreigner.Id;
                 long serviceId = ((Service)comboBoxService.SelectedItem).Id;
+                long employeeId = await GetEmployeeIdByServiceId(serviceId);
                 Status status = Status.Создана;
                 DateTime dateCreation = DateTime.Now;
                 DateTime? dateCompletion = null;

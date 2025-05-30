@@ -11,7 +11,6 @@ namespace gos_uslugi
         private readonly Account _account;
         private readonly IForeignerService _foreignerService;
         private readonly IAccountRepository _accountRepository;
-        private readonly IForeignerRepository _foreignerRepository;
 
         private string _originalPassword;
         private string _originalFullName;
@@ -23,6 +22,7 @@ namespace gos_uslugi
         private string _originalPhoneNumber;
         private string _originalEmail;
         private char _originalPasswordChar;
+        private string _originalLogin;
 
         public ЛичныйКабинет(Account account, IForeignerService foreignerService, IAccountRepository accountRepository)
         {
@@ -31,11 +31,11 @@ namespace gos_uslugi
             _foreignerService = foreignerService;
             _accountRepository = accountRepository;
 
-            LoadForeignerDataAsync();
+            LoadUserDataAsync();
             InitializeReadOnlyState();
         }
 
-        private async Task LoadForeignerDataAsync()
+        private async Task LoadUserDataAsync()
         {
             try
             {
@@ -43,57 +43,48 @@ namespace gos_uslugi
 
                 try
                 {
-                    using (NpgsqlConnection connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
+                    Account account = await _accountRepository.FindByLogin(login);
+
+                    if (account != null)
                     {
-                        await connection.OpenAsync();
+                        Foreigner foreigner = await _foreignerService.GetForeignerByLogin(login);
 
-                        string sqlQuery = @"
-                        SELECT a.login, a.password, a.full_name, f.citizen, f.passport, f.INN, f.purpose_visit, f.date_birth, f.phone_number, f.email
-                        FROM account a
-                        INNER JOIN foreigner f ON a.id_account = f.id_account
-                        WHERE a.login = @login";
-
-                        using (NpgsqlCommand command = new NpgsqlCommand(sqlQuery, connection))
+                        if (foreigner != null)
                         {
-                            command.Parameters.AddWithValue("@login", login);
+                            textBox1.Text = account.FullName;
+                            textBoxPassword.Text = account.Password;
+                            textBox2.Text = foreigner.Email;
+                            textBox3.Text = foreigner.PhoneNumber;
+                            textBox4.Text = foreigner.INN;
+                            textBox5.Text = foreigner.Citizen;
+                            textBox6.Text = foreigner.PurposeVisit;
+                            textBox8.Text = foreigner.Passport;
+                            dateTimePicker1.Value = foreigner.DateBirth; 
 
-                            using (NpgsqlDataReader reader = await command.ExecuteReaderAsync())
-                            {
-                                if (await reader.ReadAsync())
-                                {
-
-                                    textBox1.Text = reader.GetString(2);
-                                    textBoxPassword.Text = reader.GetString(1);
-                                    textBox2.Text = reader.GetString(9);
-                                    textBox3.Text = reader.GetString(8);
-                                    textBox4.Text = reader.GetString(5);
-                                    textBox5.Text = reader.GetString(3);
-                                    textBox6.Text = reader.GetString(6);
-                                    textBox8.Text = reader.GetString(4);
-                                    dateTimePicker1.Value = reader.GetDateTime(7);
-
-                                    _originalFullName = reader.GetString(2);
-                                    _originalEmail = reader.GetString(9);
-                                    _originalPhoneNumber = reader.GetString(8);
-                                    _originalINN = reader.GetString(5);
-                                    _originalCitizen = reader.GetString(3);
-                                    _originalPurposeVisit = reader.GetString(6);
-                                    _originalPassport = reader.GetString(4);
-                                    _originalDateBirth = reader.GetDateTime(7);
-                                    _originalPassword = reader.GetString(1);
-
-                                }
-                                else
-                                {
-                                    MessageBox.Show("Пользователь не найден.");
-                                }
-                            }
+                            _originalFullName = account.FullName;
+                            _originalEmail = foreigner.Email;
+                            _originalPhoneNumber = foreigner.PhoneNumber;
+                            _originalINN = foreigner.INN;
+                            _originalCitizen = foreigner.Citizen;
+                            _originalPurposeVisit = foreigner.PurposeVisit;
+                            _originalPassport = foreigner.Passport;
+                            _originalDateBirth = foreigner.DateBirth;
+                            _originalPassword = account.Password;
+                            _originalLogin = account.Login;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Foreigner не найден.");
                         }
                     }
+                    else
+                    {
+                        MessageBox.Show("Account не найден.");
+                    }
                 }
-                catch (NpgsqlException ex)
+                catch (Exception ex)
                 {
-                    MessageBox.Show($"Ошибка подключения: {ex.Message}");
+                    MessageBox.Show($"Ошибка загрузки данных: {ex.Message}");
                 }
             }
             catch (Exception ex)
@@ -128,6 +119,7 @@ namespace gos_uslugi
             _originalPassport = textBox8.Text;
             _originalDateBirth = dateTimePicker1.Value;
             _originalPassword = textBoxPassword.Text;
+            _originalLogin = textBox2.Text;
 
             textBox1.ReadOnly = false;
             textBox2.ReadOnly = false;
@@ -162,11 +154,11 @@ namespace gos_uslugi
 
         private async void button3_Click(object sender, EventArgs e)
         {
-            await SaveForeignerDataAsync();
+            await SaveUserDataAsync();
             textBoxPassword_Leave(textBoxPassword, EventArgs.Empty);
         }
 
-        private async Task SaveForeignerDataAsync()
+        private async Task SaveUserDataAsync()
         {
             try
             {
@@ -177,8 +169,20 @@ namespace gos_uslugi
                 string newCitizen = textBox5.Text;
                 string newPassport = textBox8.Text;
                 string newPassword = textBoxPassword.Text;
+                string newLogin = textBox2.Text;
 
-                await _foreignerService.UpdateForeignerInfo(_account.Id, newFullName, newEmail, newPhoneNumber, newINN, newCitizen, newPassport, newPassword);
+                if (await IsLoginAlreadyRegistered(newLogin, _account.Id))
+                {
+                    MessageBox.Show("Этот логин уже зарегистрирован");
+                    return;
+                }
+
+                await _foreignerService.UpdateForeignerInfo(_account.Id, newFullName, newEmail, newPhoneNumber, newINN, newCitizen, newPassport, newPassword, newLogin);
+
+                _account.FullName = newFullName;
+                _account.Login = newLogin;
+                _account.Password = newPassword;
+                await _accountRepository.Save(_account);
 
                 MessageBox.Show("Данные успешно обновлены!");
 
@@ -189,6 +193,8 @@ namespace gos_uslugi
                 _originalCitizen = newCitizen;
                 _originalPassport = newPassport;
                 _originalPassword = newPassword;
+                _originalLogin = newLogin;
+                _account.Login = newLogin;
 
                 InitializeReadOnlyState();
                 button1.Visible = true;
@@ -198,6 +204,28 @@ namespace gos_uslugi
                 MessageBox.Show($"Ошибка при обновлении данных: {ex.Message}");
             }
         }
+        private async Task<bool> IsLoginAlreadyRegistered(string login, long currentAccountId)
+        {
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
+            {
+                await connection.OpenAsync();
+
+                string sqlQuery = @"
+                    SELECT COUNT(*)
+                    FROM account
+                    WHERE login = @login AND id_account != @currentAccountId"; 
+
+                using (NpgsqlCommand command = new NpgsqlCommand(sqlQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@login", login);
+                    command.Parameters.AddWithValue("@currentAccountId", currentAccountId);
+
+                    long count = (long)await command.ExecuteScalarAsync();
+                    return count > 0;
+                }
+            }
+        }
+
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsLetter(e.KeyChar) && e.KeyChar != ' ' && e.KeyChar != (char)Keys.Back)

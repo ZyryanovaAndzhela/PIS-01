@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Windows.Forms;
 using gos_uslugi.Repositories;
+using gos_uslugi.Services;
 
 namespace gos_uslugi
 {
     public partial class Авторизация : Form
     {
         private readonly IAuthenticationService _authenticationService;
-        private readonly IForeignerRepository foreignerRepository = new ForeignerRepository();
+        private readonly IForeignerRepository foreignerRepository = new ForeignerRepository(ConfigurationManager.ConnectionString);
 
         public Авторизация(IAuthenticationService authenticationService)
         {
@@ -20,7 +21,7 @@ namespace gos_uslugi
             string login = textBox1.Text;
             string password = textBox2.Text;
 
-            IAccountRepository accountRepository = new AccountRepository();
+            IAccountRepository accountRepository = new AccountRepository(ConfigurationManager.ConnectionString);
             IAuthenticationService authenticationService = new AuthenticationService(accountRepository);
 
             Account account = await _authenticationService.Authenticate(login, password);
@@ -40,7 +41,13 @@ namespace gos_uslugi
 
         private void label4_Click(object sender, EventArgs e)
         {
-            СозданиеНовогоАккаунта form4 = new СозданиеНовогоАккаунта();
+            string connectionString = "Server=localhost;Port=5433;Database=gos_uslugi;Username=postgres;Password=9943;";
+
+            IAccountRepository accountRepository = new AccountRepository(connectionString);
+            IForeignerRepository foreignerRepository = new ForeignerRepository(connectionString);
+            IForeignerService foreignerService = new ForeignerService(foreignerRepository, accountRepository);
+
+            СозданиеНовогоАккаунта form4 = new СозданиеНовогоАккаунта(accountRepository, foreignerRepository, foreignerService);
             this.Hide();
             form4.ShowDialog();
             this.Show();

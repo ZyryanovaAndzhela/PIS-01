@@ -7,21 +7,26 @@ namespace gos_uslugi.Repositories
 {
     public class ForeignerRepository : IForeignerRepository
     {
+        private readonly string _connectionString;
+        public ForeignerRepository(string connectionString)
+        {
+            _connectionString = connectionString;
+        }
         public async Task<Foreigner> FindById(long foreignerId)
         {
             Foreigner foreigner = null;
 
-            using (var connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
+            using (var connection = new NpgsqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
 
                 string sql = @"
-                    SELECT 
-                        a.id_account, a.login, a.full_name, a.password, a.role,
-                        f.id_foreigner, f.citizen, f.passport, f.INN, f.purpose_visit, f.date_birth, f.phone_number, f.email
-                    FROM account a
-                    INNER JOIN foreigner f ON a.id_account = f.id_account
-                    WHERE f.id_foreigner = @foreignerId";
+            SELECT 
+                a.id_account, a.login, a.full_name, a.password, a.role,
+                f.id_foreigner, f.citizen, f.passport, f.INN, f.purpose_visit, f.date_birth, f.phone_number, f.email
+            FROM account a
+            INNER JOIN foreigner f ON a.id_account = f.id_account
+            WHERE f.id_account = @foreignerId";
 
                 using (var cmd = new NpgsqlCommand(sql, connection))
                 {
@@ -80,16 +85,16 @@ namespace gos_uslugi.Repositories
         public async Task<Foreigner> GetForeignerByLogin(string login)
         {
             string sqlQuery = @"
-                SELECT f.id_foreigner, f.citizen, f.passport, f.inn, f.purpose_visit, f.date_birth, f.phone_number, f.email, a.id_account, a.login, a.full_name, a.password, a.role
-                FROM foreigner f
-                INNER JOIN account a ON f.id_account = a.id_account
-                WHERE a.login = @login";
+            SELECT f.id_foreigner, f.citizen, f.passport, f.inn, f.purpose_visit, f.date_birth, f.phone_number, f.email, a.id_account, a.login, a.full_name, a.password, a.role
+            FROM foreigner f
+            INNER JOIN account a ON f.id_account = a.id_account
+            WHERE a.login = @login";
 
             Foreigner foreigner = null;
 
             try
             {
-                using (NpgsqlConnection connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
+                using (NpgsqlConnection connection = new NpgsqlConnection(_connectionString)) // Используем _connectionString
                 {
                     await connection.OpenAsync();
 
@@ -131,7 +136,7 @@ namespace gos_uslugi.Repositories
 
         public async Task<Foreigner> Save(Foreigner foreigner)
         {
-            using (var connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
+            using (var connection = new NpgsqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
 
@@ -139,31 +144,17 @@ namespace gos_uslugi.Repositories
                 {
                     try
                     {
-                        string sqlAccount = @"
-                        UPDATE account 
-                        SET login = @login, full_name = @fullName, password = @password
-                        WHERE id_account = @accountId";
-
-                        using (var cmdAccount = new NpgsqlCommand(sqlAccount, connection, transaction))
-                        {
-                            cmdAccount.Parameters.AddWithValue("@accountId", foreigner.Id);
-                            cmdAccount.Parameters.AddWithValue("@login", foreigner.Login);
-                            cmdAccount.Parameters.AddWithValue("@fullName", foreigner.FullName);
-                            cmdAccount.Parameters.AddWithValue("@password", foreigner.Password);
-
-                            await cmdAccount.ExecuteNonQueryAsync();
-                        }
-
                         string sqlForeigner = @"
-                        UPDATE foreigner 
+                        INSERT INTO foreigner (id_account, citizen, passport, INN, purpose_visit, date_birth, phone_number, email)
+                        VALUES (@accountId, @citizen, @passport, @INN, @purposeVisit, @dateBirth, @phoneNumber, @email)
+                        ON CONFLICT (id_account) DO UPDATE 
                         SET citizen = @citizen, passport = @passport, INN = @INN, 
                             purpose_visit = @purposeVisit, date_birth = @dateBirth, 
-                            phone_number = @phoneNumber, email = @email
-                        WHERE id_account = @accountId";
+                            phone_number = @phoneNumber, email = @email";
 
                         using (var cmdForeigner = new NpgsqlCommand(sqlForeigner, connection, transaction))
                         {
-                            cmdForeigner.Parameters.AddWithValue("@accountId", foreigner.Id); 
+                            cmdForeigner.Parameters.AddWithValue("@accountId", foreigner.Id);
                             cmdForeigner.Parameters.AddWithValue("@citizen", foreigner.Citizen);
                             cmdForeigner.Parameters.AddWithValue("@passport", foreigner.Passport);
                             cmdForeigner.Parameters.AddWithValue("@INN", foreigner.INN);
@@ -174,7 +165,6 @@ namespace gos_uslugi.Repositories
 
                             await cmdForeigner.ExecuteNonQueryAsync();
                         }
-
                         transaction.Commit();
                     }
                     catch (Exception ex)

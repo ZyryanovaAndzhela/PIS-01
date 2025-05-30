@@ -4,6 +4,8 @@ using System.Windows.Forms;
 using System.Threading.Tasks;
 using gos_uslugi.Repositories;
 using gos_uslugi.Services;
+using System.Diagnostics;
+using System.Security.Principal;
 
 namespace gos_uslugi
 {
@@ -25,10 +27,10 @@ namespace gos_uslugi
 
         private void button1_Click(object sender, EventArgs e)
         {
-            IAccountRepository accountRepository = new AccountRepository();
-            IForeignerRepository foreignerRepository = new ForeignerRepository();
+            IAccountRepository accountRepository = new AccountRepository(ConfigurationManager.ConnectionString);
+            IForeignerRepository foreignerRepository = new ForeignerRepository(ConfigurationManager.ConnectionString);
             IForeignerService foreignerService = new ForeignerService(foreignerRepository, accountRepository);
-
+            Debug.WriteLine($"Передаем в ЛичныйКабинет: Account.Id = {_account.Id}, Account.Login = {_account.Login}");
             ЛичныйКабинет form3 = new ЛичныйКабинет(_account, foreignerService, accountRepository);
             this.Hide();
             form3.ShowDialog();

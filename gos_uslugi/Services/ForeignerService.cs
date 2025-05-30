@@ -17,20 +17,30 @@ namespace gos_uslugi.Services
         {
             return await _foreignerRepository.GetForeignerByLogin(login);
         }
-        public async Task UpdateForeignerInfo(long accountId, string fullName, string email, string phoneNumber, string inn, string citizen, string passport, string password)
+        public async Task UpdateForeignerInfo(long accountId, string fullName, string email, string phoneNumber, string inn, string citizen, string passport, string password, string login)
         {
+            var foreigner = await _foreignerRepository.FindById(accountId);
+            if (foreigner == null)
+            {
+                throw new Exception("Foreigner not found");
+            }
+
             if (await _foreignerRepository.IsEmailAlreadyRegistered(email, accountId))
             {
                 throw new Exception("Этот email уже зарегистрирован. Пожалуйста, используйте другой email.");
             }
 
             var account = await _accountRepository.FindById(accountId);
+            if (account == null)
+            {
+                throw new Exception("Account not found");
+            }
+
             account.FullName = fullName;
             account.Password = password;
-            account.Login = email;
+            account.Login = login;
             await _accountRepository.Save(account);
 
-            var foreigner = await _foreignerRepository.FindById(accountId);
             foreigner.Email = email;
             foreigner.PhoneNumber = phoneNumber;
             foreigner.INN = inn;
