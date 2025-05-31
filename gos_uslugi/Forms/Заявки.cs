@@ -77,9 +77,8 @@ namespace gos_uslugi
 
             try
             {
-                RuleRepository ruleRepository = new RuleRepository(ConfigurationManager.ConnectionString);
-                RuleService ruleService = new RuleService(ruleRepository);
-                IServiceRepository serviceRepository = new ServiceRepository(ConfigurationManager.ConnectionString, ruleService);
+                RuleService ruleService = new RuleService(new RuleRepository());
+                IServiceRepository serviceRepository = new ServiceRepository(ruleService);
                 Service service = await serviceRepository.FindById(serviceId.Value);
 
                 return service.Description;
@@ -105,16 +104,15 @@ namespace gos_uslugi
         {
             try
             {
-                string connectionString = ConfigurationManager.ConnectionString;
-                IRequestRepository requestRepository = new RequestRepository(connectionString);
-                НоваяЗаявка newRequestForm = new НоваяЗаявка(_account, _requestService, requestRepository, connectionString);
+                IRequestRepository requestRepository = new RequestRepository();
+                НоваяЗаявка newRequestForm = new НоваяЗаявка(_account, _requestService, requestRepository);
                 this.Hide();
                 newRequestForm.ShowDialog();
                 this.Show();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Произошла ошибка: {ex.Message}\n{ex.StackTrace}");
+                MessageBox.Show($"Произошла ошибка: {ex.Message}");
             }
         }
 
@@ -127,9 +125,8 @@ namespace gos_uslugi
 
                 if (selectedRequest != null)
                 {
-                    IRequestService requestService = new RequestService(new RequestRepository(ConfigurationManager.ConnectionString));
-                    string connectionString = ConfigurationManager.ConnectionString;
-                    ДеталиЗаявки detailsForm = new ДеталиЗаявки(selectedRequest, _account, requestService, connectionString);
+                    IRequestService requestService = new RequestService(new RequestRepository());
+                    ДеталиЗаявки detailsForm = new ДеталиЗаявки(selectedRequest, _account, requestService);
                     this.Hide();
                     detailsForm.ShowDialog();
                     this.Show();

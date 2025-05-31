@@ -58,9 +58,8 @@ namespace gos_uslugi
 
         private void buttonEditService_Click(object sender, EventArgs e)
         {
-            RuleRepository ruleRepository = new RuleRepository(ConfigurationManager.ConnectionString);
-            RuleService ruleService = new RuleService(ruleRepository);
-            IServiceRepository serviceRepository = new ServiceRepository(ConfigurationManager.ConnectionString, ruleService);
+            RuleService ruleService = new RuleService(new RuleRepository());
+            IServiceRepository serviceRepository = new ServiceRepository(ruleService);
             ИзменениеУслуги изменениеУслуги = new ИзменениеУслуги(_service.Id, serviceRepository);
             this.Hide();
             изменениеУслуги.ShowDialog();

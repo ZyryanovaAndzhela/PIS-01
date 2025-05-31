@@ -1,11 +1,7 @@
-﻿using Npgsql;
-using System;
+﻿using System;
 using System.Windows.Forms;
-using System.Threading.Tasks;
 using gos_uslugi.Repositories;
 using gos_uslugi.Services;
-using System.Diagnostics;
-using System.Security.Principal;
 
 namespace gos_uslugi
 {
@@ -14,7 +10,7 @@ namespace gos_uslugi
         private readonly Account _account;
         private readonly IForeignerRepository _foreignerRepository;
         private readonly IAuthenticationService _authenticationService;
-        string connectionString = "Server=localhost;Port=5433;Database=gos_uslugi;Username=postgres;Password=9943;";
+
         public ГлавноеМеню(Account account, IForeignerRepository foreignerRepository, IAuthenticationService authenticationService)
         {
             InitializeComponent();
@@ -27,10 +23,9 @@ namespace gos_uslugi
 
         private void button1_Click(object sender, EventArgs e)
         {
-            IAccountRepository accountRepository = new AccountRepository(ConfigurationManager.ConnectionString);
-            IForeignerRepository foreignerRepository = new ForeignerRepository(ConfigurationManager.ConnectionString);
+            IAccountRepository accountRepository = new AccountRepository();
+            IForeignerRepository foreignerRepository = new ForeignerRepository();
             IForeignerService foreignerService = new ForeignerService(foreignerRepository, accountRepository);
-            Debug.WriteLine($"Передаем в ЛичныйКабинет: Account.Id = {_account.Id}, Account.Login = {_account.Login}");
             ЛичныйКабинет form3 = new ЛичныйКабинет(_account, foreignerService, accountRepository);
             this.Hide();
             form3.ShowDialog();
@@ -39,9 +34,9 @@ namespace gos_uslugi
 
         private void button2_Click(object sender, EventArgs e)
         {
-            RuleRepository ruleRepository = new RuleRepository(ConfigurationManager.ConnectionString);
+            RuleRepository ruleRepository = new RuleRepository();
             RuleService ruleService = new RuleService(ruleRepository);
-            IServiceRepository serviceRepository = new ServiceRepository(ConfigurationManager.ConnectionString, ruleService);
+            IServiceRepository serviceRepository = new ServiceRepository(ruleService);
             Услуги form6 = new Услуги(_account, serviceRepository);
             this.Hide();
             form6.ShowDialog();
@@ -50,8 +45,7 @@ namespace gos_uslugi
 
         private async void button3_Click(object sender, EventArgs e)
         {
-            Foreigner foreigner = await _foreignerRepository.GetForeignerByLogin(_account.Login);
-            IRequestRepository requestRepository = new RequestRepository(connectionString);
+            IRequestRepository requestRepository = new RequestRepository();
             IRequestService requestService = new RequestService(requestRepository);
             Заявки form5 = new Заявки(_account, requestService); 
             this.Hide();

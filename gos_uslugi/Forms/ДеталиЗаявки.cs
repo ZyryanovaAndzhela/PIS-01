@@ -11,15 +11,13 @@ namespace gos_uslugi
         public Request Request { get; set; }
         private Account _account;
         private readonly IRequestService _requestService; 
-        private readonly string _connectionString;
 
-        public ДеталиЗаявки(Request request, Account account, IRequestService requestService, string connectionString)
+        public ДеталиЗаявки(Request request, Account account, IRequestService requestService)
         {
             InitializeComponent();
             Request = request;
             _account = account;
             _requestService = requestService; 
-            _connectionString = connectionString;
             LoadRequestDetails();
 
             buttonEditRequest.Visible = _account.Role == "employee";
@@ -38,12 +36,6 @@ namespace gos_uslugi
                         labelEmployeeId.Text = "Сотрудник: " + (details.EmployeeName ?? "Не указан");
                         labelForeignerId.Text = "Пользователь: " + (details.ForeignerName ?? "Не указан");
                         labelServiceId.Text = "Услуга: " + (details.ServiceDescription ?? "Не указана");
-                    }
-                    else
-                    {
-                        labelEmployeeId.Text = "Сотрудник: Не указан";
-                        labelForeignerId.Text = "Пользователь: Не указан";
-                        labelServiceId.Text = "Услуга: Не указана";
                     }
 
                     labelID.Text = "ID: " + Request.Id.ToString();
@@ -67,15 +59,11 @@ namespace gos_uslugi
 
         private void buttonEditRequest_Click(object sender, EventArgs e)
         {
-            IRequestService requestService = new RequestService(new RequestRepository(ConfigurationManager.ConnectionString));
-            РедактированиеЗаявки editForm = new РедактированиеЗаявки(Request, _account, _requestService, _connectionString);
+            IRequestService requestService = new RequestService(new RequestRepository());
+            РедактированиеЗаявки editForm = new РедактированиеЗаявки(Request, _account, _requestService);
             this.Hide();
-            DialogResult result = editForm.ShowDialog();
+            editForm.ShowDialog();
             this.Show();
-            if (result == DialogResult.OK)
-            {
-                LoadRequestDetails();
-            }
         }
     }
 }

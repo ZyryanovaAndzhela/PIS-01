@@ -21,12 +21,14 @@ namespace gos_uslugi
         Task<Foreigner> Save(Foreigner foreigner);
         Task<Foreigner> FindById(long foreignerId);
         Task<Foreigner> GetForeignerByLogin(string login);
+        Task Update(Foreigner foreigner);
         Task<bool> IsEmailAlreadyRegistered(string email, long currentAccountId);
     }
 
     public interface IAccountRepository
     {
         Task<Account> Save(Account account);
+        Task Update(Account account);
         Task<Account> FindByLogin(string login);
         Task<Account> FindById(long accountId);
     }

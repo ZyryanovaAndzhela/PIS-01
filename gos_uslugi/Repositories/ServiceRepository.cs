@@ -8,11 +8,9 @@ namespace gos_uslugi
 {
     public class ServiceRepository : IServiceRepository
     {
-        private readonly string _connectionString;
         private readonly IRuleService _ruleService;
-        public ServiceRepository(string connectionString, IRuleService ruleService)
+        public ServiceRepository(IRuleService ruleService)
         {
-            _connectionString = connectionString;
             _ruleService = ruleService;
         }
         public async Task<Service> FindById(long serviceId)
@@ -193,48 +191,30 @@ namespace gos_uslugi
         }
         public async Task DeleteService(long serviceId)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(_connectionString))
+            using (NpgsqlConnection connection = new NpgsqlConnection())
             {
                 await connection.OpenAsync();
-                using (var transaction = connection.BeginTransaction())
+
+                string updateRequestsQuery = "UPDATE request SET id_service = NULL WHERE id_service = @id";
+                string deleteRulesQuery = "DELETE FROM service_rule WHERE id_service = @id";
+                string deleteServiceQuery = "DELETE FROM service WHERE id_service = @id";
+
+                using (NpgsqlCommand commandUpdateRequests = new NpgsqlCommand(updateRequestsQuery, connection))
                 {
-                    try
-                    {
-                        string updateRequestsQuery = "UPDATE request SET id_service = NULL WHERE id_service = @id";
-                        string deleteRulesQuery = "DELETE FROM service_rule WHERE id_service = @id";
-                        string deleteServiceQuery = "DELETE FROM service WHERE id_service = @id";
+                    commandUpdateRequests.Parameters.AddWithValue("@id", serviceId);
+                    await commandUpdateRequests.ExecuteNonQueryAsync();
+                }
 
+                using (NpgsqlCommand commandDeleteRules = new NpgsqlCommand(deleteRulesQuery, connection))
+                {
+                    commandDeleteRules.Parameters.AddWithValue("@id", serviceId);
+                    await commandDeleteRules.ExecuteNonQueryAsync();
+                }
 
-                        using (NpgsqlCommand commandUpdateRequests = new NpgsqlCommand(updateRequestsQuery, connection, transaction))
-                        {
-                            commandUpdateRequests.Parameters.AddWithValue("@id", serviceId);
-                            await commandUpdateRequests.ExecuteNonQueryAsync();
-                        }
-
-                        using (NpgsqlCommand commandDeleteRules = new NpgsqlCommand(deleteRulesQuery, connection, transaction))
-                        {
-                            commandDeleteRules.Parameters.AddWithValue("@id", serviceId);
-                            await commandDeleteRules.ExecuteNonQueryAsync();
-                        }
-
-                        using (NpgsqlCommand commandDeleteService = new NpgsqlCommand(deleteServiceQuery, connection, transaction))
-                        {
-                            commandDeleteService.Parameters.AddWithValue("@id", serviceId);
-                            await commandDeleteService.ExecuteNonQueryAsync();
-                        }
-
-                        transaction.Commit();
-                    }
-                    catch (NpgsqlException ex)
-                    {
-                        transaction.Rollback();
-                        MessageBox.Show($"Ошибка при удалении услуги: {ex.Message}");
-                    }
-                    catch (Exception ex)
-                    {
-                        transaction.Rollback();
-                        MessageBox.Show($"Произошла ошибка: {ex.Message}");
-                    }
+                using (NpgsqlCommand commandDeleteService = new NpgsqlCommand(deleteServiceQuery, connection))
+                {
+                    commandDeleteService.Parameters.AddWithValue("@id", serviceId);
+                    await commandDeleteService.ExecuteNonQueryAsync();
                 }
             }
         }

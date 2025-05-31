@@ -70,12 +70,6 @@ namespace gos_uslugi
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(textBoxDescription.Text))
-                {
-                    MessageBox.Show("Описание не может быть пустым.");
-                    return;
-                }
-
                 _service.Description = textBoxDescription.Text;
                 _service.Instructions = richTextBoxInstructions.Text;
                 _service.Price = numericUpDownPrice.Value;
@@ -115,9 +109,7 @@ namespace gos_uslugi
 
         private void buttonEditRules_Click(object sender, EventArgs e)
         {
-            string connectionString = ConfigurationManager.ConnectionString; 
-            RuleRepository ruleRepository = new RuleRepository(connectionString);
-            ИзменениеПравилУслуги editRules = new ИзменениеПравилУслуги(_serviceId, _serviceRepository, ruleRepository);
+            ИзменениеПравилУслуги editRules = new ИзменениеПравилУслуги(_serviceId, _serviceRepository, new RuleRepository());
             this.Hide();
             editRules.ShowDialog();
             this.Show();

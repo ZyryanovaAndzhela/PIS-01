@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
 using Npgsql;
-using System.Diagnostics;
 
 namespace gos_uslugi
 {
@@ -34,7 +33,7 @@ namespace gos_uslugi
 
             if (string.IsNullOrEmpty(fullName) || string.IsNullOrEmpty(phoneNumber) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
             {
-                MessageBox.Show("Пожалуйста, заполните все обязательные поля.");
+                MessageBox.Show("Заполните все обязательные поля.");
                 return;
             }
 
@@ -65,16 +64,6 @@ namespace gos_uslugi
                 await _foreignerRepository.Save(newForeigner);
 
                 MessageBox.Show("Аккаунт успешно создан!");
-
-                if (string.IsNullOrEmpty(login))
-                {
-                    MessageBox.Show("Email не может быть пустым.");
-                    return;
-                }
-                newAccount = await _accountRepository.FindByLogin(login);
-
-                
-
             }
             catch (NpgsqlException ex)
             {

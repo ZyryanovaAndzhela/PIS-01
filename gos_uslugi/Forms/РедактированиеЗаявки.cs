@@ -9,16 +9,14 @@ namespace gos_uslugi
         private Request _request;
         private Account _account;
         private readonly IRequestService _requestService;
-        private readonly string _connectionString;
         private Status _originalStatus;
 
-        public РедактированиеЗаявки(Request request, Account account, IRequestService requestService, string connectionString)
+        public РедактированиеЗаявки(Request request, Account account, IRequestService requestService)
         {
             InitializeComponent();
             _request = request;
             _account = account;
             _requestService = requestService;
-            _connectionString = connectionString;
             InitializeStatusComboBox();
             LoadRequestData();
             _originalStatus = _request.Status;
@@ -55,34 +53,24 @@ namespace gos_uslugi
             label3.Visible = isCompletedOrRejected;
             dateTimePickerCompletionDate.Visible = isCompletedOrRejected;
 
-            if (_originalStatus == Status.Создана && selectedStatus == Status.Обрабатывается)
-            {
-                dateTimePickerCompletionDate.Checked = false;
-                _request.DateCompletion = null;
-                Console.WriteLine("Очистка даты завершения (Создана -> Обрабатывается)");
-            }
-
             if (isCompletedOrRejected)
             {
                 if (_request.DateCompletion.HasValue)
                 {
                     dateTimePickerCompletionDate.Checked = true;
                     dateTimePickerCompletionDate.Value = _request.DateCompletion.Value;
-                    Console.WriteLine($"Отображение существующей даты: Checked = {dateTimePickerCompletionDate.Checked}, Date = {dateTimePickerCompletionDate.Value}");
                 }
                 else
                 {
                     dateTimePickerCompletionDate.Checked = true;
                     dateTimePickerCompletionDate.Value = DateTime.Now;
                     _request.DateCompletion = DateTime.Now; 
-                    Console.WriteLine("Устанавливаем текущую дату (если ранее не было)");
                 }
             }
             else
             {
                 dateTimePickerCompletionDate.Checked = false;
                 _request.DateCompletion = null;
-                Console.WriteLine("Скрытие и сброс даты завершения");
             }
         }
 

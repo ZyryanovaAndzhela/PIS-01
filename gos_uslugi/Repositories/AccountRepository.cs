@@ -6,11 +6,8 @@ namespace gos_uslugi
 {
     public class AccountRepository : IAccountRepository
     {
-        private readonly string _connectionString = "Server=localhost;Port=5433;Database=gos_uslugi;Username=postgres;Password=9943;";
-
-        public AccountRepository(string connectionString)
+        public AccountRepository()
         {
-            _connectionString = connectionString;
         }
 
         public async Task<Account> FindByLogin(string login)
@@ -20,7 +17,7 @@ namespace gos_uslugi
 
             try
             {
-                using (NpgsqlConnection connection = new NpgsqlConnection(_connectionString))
+                using (NpgsqlConnection connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
                 {
                     await connection.OpenAsync();
 
@@ -55,7 +52,7 @@ namespace gos_uslugi
 
         public async Task<Account> Save(Account account)
         {
-            using (var connection = new NpgsqlConnection(_connectionString))
+            using (var connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
             {
                 await connection.OpenAsync();
                 var existingAccount = await FindById(account.Id);
@@ -74,24 +71,7 @@ namespace gos_uslugi
 
                         account.Id = (long)await cmd.ExecuteScalarAsync();
                     }
-                }
-                else
-                {
-                    string sql = @"UPDATE account 
-                               SET login = @login,
-                                   full_name = @fullName, 
-                                   password = @password
-                               WHERE id_account = @accountId";
-                    using (var cmd = new NpgsqlCommand(sql, connection))
-                    {
-                        cmd.Parameters.AddWithValue("@accountId", account.Id);
-                        cmd.Parameters.AddWithValue("@login", account.Login);
-                        cmd.Parameters.AddWithValue("@fullName", account.FullName);
-                        cmd.Parameters.AddWithValue("@password", account.Password);
-
-                        await cmd.ExecuteNonQueryAsync();
-                    }
-                }
+                }                
             }
 
             return account;
@@ -100,7 +80,7 @@ namespace gos_uslugi
         public async Task<Account> FindById(long accountId)
         {
             Account account = null;
-            using (var connection = new NpgsqlConnection(_connectionString))
+            using (var connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
             {
                 await connection.OpenAsync();
                 string sql = "SELECT id_account, login, full_name, password, role FROM account WHERE id_account = @accountId";

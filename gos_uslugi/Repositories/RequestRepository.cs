@@ -10,11 +10,8 @@ namespace gos_uslugi.Repositories
 {
     public class RequestRepository : IRequestRepository
     {
-        private readonly string _connectionString;
-
-        public RequestRepository(string connectionString)
+        public RequestRepository()
         {
-            _connectionString = connectionString;
         }
 
         public async Task<(string EmployeeName, string ForeignerName, string ServiceDescription)> GetRequestDetails(long requestId)
@@ -23,7 +20,7 @@ namespace gos_uslugi.Repositories
 
             try
             {
-                using (NpgsqlConnection connection = new NpgsqlConnection(_connectionString))
+                using (NpgsqlConnection connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
                 {
                     await connection.OpenAsync();
 
@@ -71,7 +68,7 @@ namespace gos_uslugi.Repositories
 
         public async Task<Request> Save(Request request)
         {
-            using (var connection = new NpgsqlConnection(_connectionString))
+            using (var connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
             {
                 await connection.OpenAsync();
 
@@ -97,7 +94,7 @@ namespace gos_uslugi.Repositories
 
         public async Task UpdateAsync(Request request)
         {
-            using (var connection = new NpgsqlConnection(_connectionString))
+            using (var connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
             {
                 await connection.OpenAsync();
 
@@ -124,7 +121,7 @@ namespace gos_uslugi.Repositories
         public async Task<Request> FindById(long requestId)
         {
             Request request = null;
-            using (var connection = new NpgsqlConnection(_connectionString))
+            using (var connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
             {
                 await connection.OpenAsync();
                 var sql = "SELECT id, foreignerid, serviceid, status, datecreation, datecompletion, deadline, result FROM request WHERE id = @RequestId";
@@ -163,7 +160,7 @@ namespace gos_uslugi.Repositories
             try
             {
                 string query = "";
-                using (NpgsqlConnection connection = new NpgsqlConnection(_connectionString))
+                using (NpgsqlConnection connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
                 {
                     await connection.OpenAsync();
 
@@ -250,7 +247,7 @@ namespace gos_uslugi.Repositories
         public async Task<List<Service>> GetAllServices(string citizen, string purposeVisit)
         {
             List<Service> services = new List<Service>();
-            using (NpgsqlConnection connection = new NpgsqlConnection(_connectionString))
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
             {
                 await connection.OpenAsync();
                 string sql = @"
@@ -258,7 +255,6 @@ namespace gos_uslugi.Repositories
                            sr.id_service_rule AS rule_id, sr.id_service, sr.description AS rule_description, sr.condition_values, sr.condition_type, sr.operator_values, sr.term_of_service_provision
                     FROM service s
                     LEFT JOIN service_rule sr ON s.id_service = sr.id_service";
-                Debug.WriteLine($"SQL: {sql}");
 
                 using (NpgsqlCommand command = new NpgsqlCommand(sql, connection))
                 {
@@ -270,7 +266,6 @@ namespace gos_uslugi.Repositories
                             rowCount++;
                             long serviceId = reader.GetInt64(reader.GetOrdinal("id_service"));
                             string description = reader.GetString(reader.GetOrdinal("description"));
-                            Debug.WriteLine($"Service ID: {serviceId}, Description: {description}");
 
                             Service service = services.FirstOrDefault(s => s.Id == serviceId);
                             if (service == null)
@@ -335,7 +330,7 @@ namespace gos_uslugi.Repositories
         public async Task<List<ServiceRule>> GetServiceRules(long serviceId, string citizen, string purposeVisit)
         {
             List<ServiceRule> rules = new List<ServiceRule>();
-            using (NpgsqlConnection connection = new NpgsqlConnection(_connectionString))
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
             {
                 await connection.OpenAsync();
                 string sql = @"
@@ -390,7 +385,7 @@ namespace gos_uslugi.Repositories
             Foreigner foreigner = null;
             try
             {
-                using (NpgsqlConnection connection = new NpgsqlConnection(_connectionString))
+                using (NpgsqlConnection connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
                 {
                     await connection.OpenAsync();
 
@@ -431,14 +426,14 @@ namespace gos_uslugi.Repositories
 
         public async Task CreateRequest(Request request)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(_connectionString))
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
             {
                 await connection.OpenAsync();
 
                 string sql = @"
-            INSERT INTO request (id_foreigner, id_service, status, date_creation, date_completion, deadline, result)
-            VALUES (@ForeignerId, @ServiceId, @Status, @DateCreation, @DateCompletion, @Deadline, @Result);
-        ";
+                    INSERT INTO request (id_foreigner, id_service, status, date_creation, date_completion, deadline, result)
+                    VALUES (@ForeignerId, @ServiceId, @Status, @DateCreation, @DateCompletion, @Deadline, @Result);
+                ";
 
                 using (NpgsqlCommand command = new NpgsqlCommand(sql, connection))
                 {

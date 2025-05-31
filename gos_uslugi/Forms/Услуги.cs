@@ -42,7 +42,7 @@ namespace gos_uslugi
                 }
                 else
                 {
-                    MessageBox.Show("В таблице service нет данных, соответствующих критериям поиска!");
+                    MessageBox.Show("В таблице service нет данных, соответствующих критериям поиска");
                 }
             }
             catch (Exception ex)
@@ -58,9 +58,8 @@ namespace gos_uslugi
                 ListViewItem selectedItem = listView1.SelectedItems[0];
                 long serviceId = (long)selectedItem.Tag;
 
-                RuleRepository ruleRepository = new RuleRepository(ConfigurationManager.ConnectionString);
-                RuleService ruleService = new RuleService(ruleRepository);
-                IServiceRepository serviceRepository = new ServiceRepository(ConfigurationManager.ConnectionString, ruleService);
+                RuleService ruleService = new RuleService(new RuleRepository());
+                IServiceRepository serviceRepository = new ServiceRepository(ruleService);
                 Service selectedService = await serviceRepository.FindById(serviceId);
 
                 if (selectedService != null)

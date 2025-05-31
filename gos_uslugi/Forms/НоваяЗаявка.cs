@@ -11,16 +11,14 @@ namespace gos_uslugi
         private readonly Account _account;
         private readonly IRequestService _requestService;
         private readonly IRequestRepository _requestRepository;
-        private readonly string _connectionString;
         private Foreigner _foreigner;
 
-        public НоваяЗаявка(Account account, IRequestService requestService, IRequestRepository requestRepository, string connectionString)
+        public НоваяЗаявка(Account account, IRequestService requestService, IRequestRepository requestRepository)
         {
             InitializeComponent();
             _account = account;
             _requestService = requestService;
             _requestRepository = requestRepository;
-            _connectionString = connectionString;
         }
 
         private void НоваяЗаявка_Load(object sender, EventArgs e)
@@ -95,7 +93,7 @@ namespace gos_uslugi
         }
         private async Task<long> GetEmployeeIdByServiceId(long serviceId)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(_connectionString))
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
             {
                 await connection.OpenAsync();
 
@@ -122,12 +120,6 @@ namespace gos_uslugi
         {
             try
             {
-                if (_foreigner == null)
-                {
-                    MessageBox.Show("Необходимо загрузить данные об иностранце.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
                 if (comboBoxService.SelectedItem == null)
                 {
                     MessageBox.Show("Необходимо выбрать услугу.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -142,19 +134,11 @@ namespace gos_uslugi
                 DateTime? dateCompletion = null;
 
                 string deadline = null;
-                if (comboBoxService.SelectedItem != null && _foreigner != null)
+                if (comboBoxService.SelectedItem != null)
                 {
                     Service selectedService = (Service)comboBoxService.SelectedItem;
-
-                    if (selectedService.Rules != null && selectedService.Rules.Count > 0)
-                    {
-                        ServiceRule rule = selectedService.Rules[0];
-                        deadline = rule.TermOfServiceProvision + " дней";
-                    }
-                    else
-                    {
-                        deadline = "Срок не определен";
-                    }
+                    ServiceRule rule = selectedService.Rules[0];
+                    deadline = rule.TermOfServiceProvision + " дней";   
                 }
                 else
                 {

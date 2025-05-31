@@ -14,7 +14,7 @@ namespace gos_uslugi
             ConfigurationManager.ConnectionString = "Server=localhost;Port=5433;Database=gos_uslugi;Username=postgres;Password=9943;";
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            IAccountRepository accountRepository = new AccountRepository(ConfigurationManager.ConnectionString);
+            IAccountRepository accountRepository = new AccountRepository();
             IAuthenticationService authenticationService = new AuthenticationService(accountRepository);
             Application.Run(new Авторизация(authenticationService));
         }

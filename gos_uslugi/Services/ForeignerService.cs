@@ -17,36 +17,9 @@ namespace gos_uslugi.Services
         {
             return await _foreignerRepository.GetForeignerByLogin(login);
         }
-        public async Task UpdateForeignerInfo(long accountId, string fullName, string email, string phoneNumber, string inn, string citizen, string passport, string password, string login)
+        public async Task UpdateForeignerInfo(Foreigner foreigner)
         {
-            var foreigner = await _foreignerRepository.FindById(accountId);
-            if (foreigner == null)
-            {
-                throw new Exception("Foreigner not found");
-            }
-
-            if (await _foreignerRepository.IsEmailAlreadyRegistered(email, accountId))
-            {
-                throw new Exception("Этот email уже зарегистрирован. Пожалуйста, используйте другой email.");
-            }
-
-            var account = await _accountRepository.FindById(accountId);
-            if (account == null)
-            {
-                throw new Exception("Account not found");
-            }
-
-            account.FullName = fullName;
-            account.Password = password;
-            account.Login = login;
-            await _accountRepository.Save(account);
-
-            foreigner.Email = email;
-            foreigner.PhoneNumber = phoneNumber;
-            foreigner.INN = inn;
-            foreigner.Citizen = citizen;
-            foreigner.Passport = passport;
-            await _foreignerRepository.Save(foreigner);
+            await _foreignerRepository.Update(foreigner);
         }
         public async Task<Foreigner> GetForeignerById(long foreignerId)
         {
@@ -55,7 +28,7 @@ namespace gos_uslugi.Services
 
         public async Task<Foreigner> RegisterForeigner(Foreigner foreignerData)
         {
-            return await _foreignerRepository.Save(foreignerData);
+            return foreignerData;
         }
 
         public async Task<Foreigner> UpdateContactInfo(long foreignerId, string email, string number)
@@ -63,12 +36,12 @@ namespace gos_uslugi.Services
             var foreigner = await _foreignerRepository.FindById(foreignerId);
 
             if (foreigner == null)
-                throw new Exception($"Foreigner id = {foreignerId} was not found");
+                throw new Exception($"Foreigner c id = {foreignerId} не найден");
 
             foreigner.Email = email;
             foreigner.PhoneNumber = number;
 
-            return await _foreignerRepository.Save(foreigner);
+            return foreigner;
         }
     }
 }

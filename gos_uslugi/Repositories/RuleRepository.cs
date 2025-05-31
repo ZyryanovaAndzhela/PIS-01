@@ -8,10 +8,8 @@ namespace gos_uslugi.Repositories
 {
     class RuleRepository : IRuleRepository
     {
-        private readonly string _connectionString;
-        public RuleRepository(string connectionString)
+        public RuleRepository()
         {
-            _connectionString = connectionString;
         }
         public async Task<List<ServiceRule>> GetServiceRules(long serviceId)
         {
@@ -142,7 +140,7 @@ namespace gos_uslugi.Repositories
         }
         public async Task DeleteServiceRule(long ruleId)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(_connectionString))
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
             {
                 await connection.OpenAsync();
 
