@@ -55,17 +55,9 @@ namespace gos_uslugi
 
             if (isCompletedOrRejected)
             {
-                if (_request.DateCompletion.HasValue)
-                {
-                    dateTimePickerCompletionDate.Checked = true;
-                    dateTimePickerCompletionDate.Value = _request.DateCompletion.Value;
-                }
-                else
-                {
-                    dateTimePickerCompletionDate.Checked = true;
-                    dateTimePickerCompletionDate.Value = DateTime.Now;
-                    _request.DateCompletion = DateTime.Now; 
-                }
+                dateTimePickerCompletionDate.Checked = true;
+                dateTimePickerCompletionDate.Value = DateTime.Now;
+                _request.DateCompletion = DateTime.Now;
             }
             else
             {
@@ -81,14 +73,6 @@ namespace gos_uslugi
                 _request.Status = (Status)comboBoxStatus.SelectedItem;
                 _request.Result = string.IsNullOrEmpty(textBoxResult.Text) ? null : textBoxResult.Text;
 
-                if (dateTimePickerCompletionDate.Checked)
-                {
-                    _request.DateCompletion = dateTimePickerCompletionDate.Value;
-                }
-                else
-                {
-                    _request.DateCompletion = null;
-                }
 
                 await _requestService.UpdateAsync(_request);
 

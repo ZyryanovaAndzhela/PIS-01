@@ -6,6 +6,7 @@ namespace gos_uslugi
 {
     public class AccountRepository : IAccountRepository
     {
+
         public AccountRepository()
         {
         }
@@ -55,23 +56,18 @@ namespace gos_uslugi
             using (var connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
             {
                 await connection.OpenAsync();
-                var existingAccount = await FindById(account.Id);
-
-                if (existingAccount == null)
-                {
-                    string sql = @"INSERT INTO account (login, full_name, password, role) 
+                string sql = @"INSERT INTO account (login, full_name, password, role) 
                                VALUES (@login, @fullName, @password, @role)
                                RETURNING id_account";
-                    using (var cmd = new NpgsqlCommand(sql, connection))
-                    {
-                        cmd.Parameters.AddWithValue("@login", account.Login);
-                        cmd.Parameters.AddWithValue("@fullName", account.FullName);
-                        cmd.Parameters.AddWithValue("@password", account.Password);
-                        cmd.Parameters.AddWithValue("@role", account.Role);
+                using (var cmd = new NpgsqlCommand(sql, connection))
+                {
+                    cmd.Parameters.AddWithValue("@login", account.Login);
+                    cmd.Parameters.AddWithValue("@fullName", account.FullName);
+                    cmd.Parameters.AddWithValue("@password", account.Password);
+                    cmd.Parameters.AddWithValue("@role", account.Role);
 
-                        account.Id = (long)await cmd.ExecuteScalarAsync();
-                    }
-                }                
+                    account.Id = (long)await cmd.ExecuteScalarAsync();
+                } 
             }
 
             return account;

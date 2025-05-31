@@ -14,7 +14,7 @@ namespace gos_uslugi
     public interface IForeignerService
     {
         Task<Foreigner> GetForeignerByLogin(string login);
-        Task UpdateForeignerInfo(Foreigner foreigner);
+        Task UpdateForeignerInfo(long accountId, string fullName, string email, string phoneNumber, string inn, string citizen, string passport, string password, string login);
         Task<Foreigner> GetForeignerById(long foreignerId);
         Task<Foreigner> RegisterForeigner(Foreigner foreignerId);
         Task<Foreigner> UpdateContactInfo(long foreignerId, string email, string number);

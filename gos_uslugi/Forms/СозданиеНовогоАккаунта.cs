@@ -72,7 +72,6 @@ namespace gos_uslugi
             this.Close();
         }
 
-
         private void textBoxFIO_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsLetter(e.KeyChar) && e.KeyChar != ' ' && e.KeyChar != (char)Keys.Back)

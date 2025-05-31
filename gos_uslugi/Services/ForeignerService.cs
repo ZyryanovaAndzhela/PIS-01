@@ -17,9 +17,20 @@ namespace gos_uslugi.Services
         {
             return await _foreignerRepository.GetForeignerByLogin(login);
         }
-        public async Task UpdateForeignerInfo(Foreigner foreigner)
+        public async Task UpdateForeignerInfo(long accountId, string fullName, string email, string phoneNumber, string inn, string citizen, string passport, string password, string login)
         {
-            await _foreignerRepository.Update(foreigner);
+            var foreigner = await _foreignerRepository.FindById(accountId);
+            if (foreigner == null)
+            {
+                throw new Exception("Foreigner not found");
+            }
+
+            foreigner.Email = email;
+            foreigner.PhoneNumber = phoneNumber;
+            foreigner.INN = inn;
+            foreigner.Citizen = citizen;
+            foreigner.Passport = passport;
+            await _foreignerRepository.Save(foreigner);
         }
         public async Task<Foreigner> GetForeignerById(long foreignerId)
         {
@@ -28,7 +39,7 @@ namespace gos_uslugi.Services
 
         public async Task<Foreigner> RegisterForeigner(Foreigner foreignerData)
         {
-            return foreignerData;
+            return await _foreignerRepository.Save(foreignerData);
         }
 
         public async Task<Foreigner> UpdateContactInfo(long foreignerId, string email, string number)
@@ -36,12 +47,12 @@ namespace gos_uslugi.Services
             var foreigner = await _foreignerRepository.FindById(foreignerId);
 
             if (foreigner == null)
-                throw new Exception($"Foreigner c id = {foreignerId} не найден");
+                throw new Exception($"Foreigner id = {foreignerId} was not found");
 
             foreigner.Email = email;
             foreigner.PhoneNumber = number;
 
-            return foreigner;
+            return await _foreignerRepository.Save(foreigner);
         }
     }
 }

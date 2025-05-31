@@ -19,12 +19,12 @@ namespace gos_uslugi.Repositories
                 await connection.OpenAsync();
 
                 string sql = @"
-                    SELECT 
-                        a.id_account, a.login, a.full_name, a.password, a.role,
-                        f.id_foreigner, f.citizen, f.passport, f.INN, f.purpose_visit, f.date_birth, f.phone_number, f.email
-                    FROM account a
-                    INNER JOIN foreigner f ON a.id_account = f.id_account
-                    WHERE f.id_foreigner = @foreignerId";
+            SELECT 
+                a.id_account, a.login, a.full_name, a.password, a.role,
+                f.id_foreigner, f.citizen, f.passport, f.INN, f.purpose_visit, f.date_birth, f.phone_number, f.email
+            FROM account a
+            INNER JOIN foreigner f ON a.id_account = f.id_account
+            WHERE f.id_account = @foreignerId";
 
                 using (var cmd = new NpgsqlCommand(sql, connection))
                 {
@@ -36,7 +36,7 @@ namespace gos_uslugi.Repositories
                         {
                             foreigner = new Foreigner
                             {
-                                Id = reader.GetInt64(reader.GetOrdinal("id_foreigner")),
+                                Id = reader.GetInt64(reader.GetOrdinal("id_account")),
                                 Login = reader.GetString(reader.GetOrdinal("login")),
                                 FullName = reader.GetString(reader.GetOrdinal("full_name")),
                                 Password = reader.GetString(reader.GetOrdinal("password")),
@@ -92,7 +92,7 @@ namespace gos_uslugi.Repositories
 
             try
             {
-                using (NpgsqlConnection connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))   
+                using (NpgsqlConnection connection = new NpgsqlConnection(ConfigurationManager.ConnectionString)) // Используем _connectionString
                 {
                     await connection.OpenAsync();
 
@@ -138,22 +138,39 @@ namespace gos_uslugi.Repositories
             {
                 await connection.OpenAsync();
 
-                string sqlForeigner = @"
-                        INSERT INTO foreigner (id_account, citizen, passport, INN, purpose_visit, date_birth, phone_number, email)
-                        VALUES (@accountId, @citizen, @passport, @INN, @purposeVisit, @dateBirth, @phoneNumber, @email)";
-
-                using (var cmdForeigner = new NpgsqlCommand(sqlForeigner, connection))
+                using (var transaction = connection.BeginTransaction())
                 {
-                    cmdForeigner.Parameters.AddWithValue("@accountId", foreigner.Id);
-                    cmdForeigner.Parameters.AddWithValue("@citizen", foreigner.Citizen);
-                    cmdForeigner.Parameters.AddWithValue("@passport", foreigner.Passport);
-                    cmdForeigner.Parameters.AddWithValue("@INN", foreigner.INN);
-                    cmdForeigner.Parameters.AddWithValue("@purposeVisit", foreigner.PurposeVisit);
-                    cmdForeigner.Parameters.AddWithValue("@dateBirth", foreigner.DateBirth);
-                    cmdForeigner.Parameters.AddWithValue("@phoneNumber", foreigner.PhoneNumber);
-                    cmdForeigner.Parameters.AddWithValue("@email", foreigner.Email);
+                    try
+                    {
+                        string sqlForeigner = @"
+                        INSERT INTO foreigner (id_account, citizen, passport, INN, purpose_visit, date_birth, phone_number, email)
+                        VALUES (@accountId, @citizen, @passport, @INN, @purposeVisit, @dateBirth, @phoneNumber, @email)
+                        ON CONFLICT (id_account) DO UPDATE 
+                        SET citizen = @citizen, passport = @passport, INN = @INN, 
+                            purpose_visit = @purposeVisit, date_birth = @dateBirth, 
+                            phone_number = @phoneNumber, email = @email";
 
-                    await cmdForeigner.ExecuteNonQueryAsync();
+                        using (var cmdForeigner = new NpgsqlCommand(sqlForeigner, connection, transaction))
+                        {
+                            cmdForeigner.Parameters.AddWithValue("@accountId", foreigner.Id);
+                            cmdForeigner.Parameters.AddWithValue("@citizen", foreigner.Citizen);
+                            cmdForeigner.Parameters.AddWithValue("@passport", foreigner.Passport);
+                            cmdForeigner.Parameters.AddWithValue("@INN", foreigner.INN);
+                            cmdForeigner.Parameters.AddWithValue("@purposeVisit", foreigner.PurposeVisit);
+                            cmdForeigner.Parameters.AddWithValue("@dateBirth", foreigner.DateBirth);
+                            cmdForeigner.Parameters.AddWithValue("@phoneNumber", foreigner.PhoneNumber);
+                            cmdForeigner.Parameters.AddWithValue("@email", foreigner.Email);
+
+                            await cmdForeigner.ExecuteNonQueryAsync();
+                        }
+                        transaction.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        Console.WriteLine($"Ошибка при сохранении данных Foreigner: {ex.Message}");
+                        throw;
+                    }
                 }
             }
 

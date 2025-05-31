@@ -15,7 +15,7 @@ namespace gos_uslugi
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             IAccountRepository accountRepository = new AccountRepository();
-            IAuthenticationService authenticationService = new AuthenticationService(accountRepository);
+            IAuthenticationService authenticationService = new AuthenticationService(new AccountRepository());
             Application.Run(new Авторизация(authenticationService));
         }
     }

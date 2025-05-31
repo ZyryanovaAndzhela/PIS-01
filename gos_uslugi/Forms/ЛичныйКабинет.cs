@@ -21,7 +21,6 @@ namespace gos_uslugi
         private string _originalPhoneNumber;
         private string _originalEmail;
         private char _originalPasswordChar;
-        private string _originalLogin;
 
         public ЛичныйКабинет(Account account, IForeignerService foreignerService, IAccountRepository accountRepository)
         {
@@ -31,7 +30,7 @@ namespace gos_uslugi
             _accountRepository = accountRepository;
 
             LoadUserDataAsync();
-            InitializeReadOnlyState();
+            InitializeReadOnly();
         }
 
         private async Task LoadUserDataAsync()
@@ -69,7 +68,6 @@ namespace gos_uslugi
                             _originalPassport = foreigner.Passport;
                             _originalDateBirth = foreigner.DateBirth;
                             _originalPassword = account.Password;
-                            _originalLogin = account.Login;
                         }
                         else
                         {
@@ -92,7 +90,7 @@ namespace gos_uslugi
             }
         }
 
-        private void InitializeReadOnlyState()
+        private void InitializeReadOnly()
         {
             textBox1.ReadOnly = true;
             textBox2.ReadOnly = true;
@@ -118,7 +116,6 @@ namespace gos_uslugi
             _originalPassport = textBox8.Text;
             _originalDateBirth = dateTimePicker1.Value;
             _originalPassword = textBoxPassword.Text;
-            _originalLogin = textBox2.Text;
 
             textBox1.ReadOnly = false;
             textBox2.ReadOnly = false;
@@ -146,7 +143,7 @@ namespace gos_uslugi
             textBoxPassword.Text = _originalPassword;
             dateTimePicker1.Value = _originalDateBirth;
 
-            InitializeReadOnlyState();
+            InitializeReadOnly();
             button1.Visible = true;
             textBoxPassword_Leave(textBoxPassword, EventArgs.Empty);
         }
@@ -192,10 +189,9 @@ namespace gos_uslugi
                 _originalCitizen = newCitizen;
                 _originalPassport = newPassport;
                 _originalPassword = newPassword;
-                _originalLogin = newLogin;
                 _account.Login = newLogin;
 
-                InitializeReadOnlyState();
+                InitializeReadOnly();
                 button1.Visible = true;
             }
             catch (Exception ex)

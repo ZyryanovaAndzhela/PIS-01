@@ -1,6 +1,5 @@
 ﻿using gos_uslugi.Repositories;
 using gos_uslugi.Services;
-using Npgsql;
 using System;
 using System.Windows.Forms;
 

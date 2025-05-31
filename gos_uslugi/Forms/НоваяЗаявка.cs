@@ -120,12 +120,6 @@ namespace gos_uslugi
         {
             try
             {
-                if (comboBoxService.SelectedItem == null)
-                {
-                    MessageBox.Show("Необходимо выбрать услугу.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
                 long foreignerId = _foreigner.Id;
                 long serviceId = ((Service)comboBoxService.SelectedItem).Id;
                 long employeeId = await GetEmployeeIdByServiceId(serviceId);

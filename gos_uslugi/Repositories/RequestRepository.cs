@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -49,9 +49,9 @@ namespace gos_uslugi.Repositories
                             if (await reader.ReadAsync())
                             {
                                 details = (
-                                    reader.IsDBNull(reader.GetOrdinal("EmployeeName")) ? null : reader.GetString(reader.GetOrdinal("EmployeeName")), 
-                                    reader.IsDBNull(reader.GetOrdinal("ForeignerName")) ? null : reader.GetString(reader.GetOrdinal("ForeignerName")), 
-                                    reader.IsDBNull(reader.GetOrdinal("ServiceDescription")) ? null : reader.GetString(reader.GetOrdinal("ServiceDescription")) 
+                                    reader.IsDBNull(reader.GetOrdinal("EmployeeName")) ? null : reader.GetString(reader.GetOrdinal("EmployeeName")),
+                                    reader.IsDBNull(reader.GetOrdinal("ForeignerName")) ? null : reader.GetString(reader.GetOrdinal("ForeignerName")),
+                                    reader.IsDBNull(reader.GetOrdinal("ServiceDescription")) ? null : reader.GetString(reader.GetOrdinal("ServiceDescription"))
                                 );
                             }
                         }
@@ -168,15 +168,15 @@ namespace gos_uslugi.Repositories
                     {
                         query = @"
                             SELECT r.id_request, s.id_employee, r.id_foreigner, r.id_service, r.status, r.date_creation, r.date_completion, r.deadline,
-                                r.result, s.description
+                                r.result, s.description, ge.id_employee AS ge_id_employee, ge.id_account AS ge_id_account  -- Добавлено для отладки
                             FROM request r
-                            JOIN service s ON r.id_service = s.id_service
-                            JOIN government_employee ge ON s.id_employee = ge.id_employee
+                            LEFT JOIN service s ON r.id_service = s.id_service
+                            LEFT JOIN government_employee ge ON s.id_employee = ge.id_employee
                             WHERE
-                                ge.id_account = @accountId 
+                                (ge.id_account = @accountId OR ge.id_employee IS NULL)
                                 AND (@filterStatus IS NULL OR r.status = @filterStatus)
                                 AND (@search IS NULL OR r.id_request::TEXT ILIKE @search OR s.description ILIKE @search);
-                             ";
+                        ";
                     }
                     else if (account.Role == "foreigner")
                     {
@@ -184,13 +184,13 @@ namespace gos_uslugi.Repositories
                             SELECT r.id_request, s.id_employee, r.id_foreigner, r.id_service, r.status, r.date_creation, r.date_completion,
                                 r.deadline, r.result, s.description
                             FROM request r
-                            JOIN service s ON r.id_service = s.id_service
-                            JOIN foreigner f ON r.id_foreigner = f.id_foreigner
+                            LEFT JOIN service s ON r.id_service = s.id_service 
+                            JOIN foreigner f ON r.id_foreigner = f.id_foreigner 
                             WHERE
                                 f.id_account = @accountId  
                                 AND (@filterStatus IS NULL OR r.status = @filterStatus)
                                 AND (@search IS NULL OR r.id_request::TEXT ILIKE @search OR s.description ILIKE @search);
-                            ";
+                        ";
                     }
                     else
                     {
@@ -302,27 +302,6 @@ namespace gos_uslugi.Repositories
                     }
                 }
 
-                foreach (var service in services)
-                {
-                    if (service.Rules != null)
-                    {
-                        service.Rules = service.Rules.OrderBy(r => {
-                            int order = 5;
-
-                            if (r.ConditionType == "Гражданство" && r.ConditionValues == citizen)
-                                order = 1;
-                            else if (r.ConditionType == "Работа" && r.ConditionValues == purposeVisit)
-                                order = 2;
-                            else if (r.ConditionType == "Гражданство" && r.ConditionValues == "ALL")
-                                order = 3;
-                            else if (r.ConditionType == "Гос. программа переселения соотечественников" && r.ConditionValues == "ALL")
-                                order = 4;
-
-                            return order;
-                        }).ToList();
-                    }
-                }
-
                 return services;
             }
         }
@@ -431,9 +410,9 @@ namespace gos_uslugi.Repositories
                 await connection.OpenAsync();
 
                 string sql = @"
-                    INSERT INTO request (id_foreigner, id_service, status, date_creation, date_completion, deadline, result)
-                    VALUES (@ForeignerId, @ServiceId, @Status, @DateCreation, @DateCompletion, @Deadline, @Result);
-                ";
+            INSERT INTO request (id_foreigner, id_service, status, date_creation, date_completion, deadline, result)
+            VALUES (@ForeignerId, @ServiceId, @Status, @DateCreation, @DateCompletion, @Deadline, @Result);
+        ";
 
                 using (NpgsqlCommand command = new NpgsqlCommand(sql, connection))
                 {

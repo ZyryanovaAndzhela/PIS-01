@@ -9,7 +9,7 @@ namespace gos_uslugi
         private long _serviceId;
         private readonly IServiceRepository _serviceRepository;
         private readonly IRuleRepository _ruleRepository;
-        private List<ServiceRule> _rules;
+        List<ServiceRule> rulesFromDb;
 
         public ИзменениеПравилУслуги(long serviceId, IServiceRepository serviceRepository, IRuleRepository ruleRepository)
         {
@@ -25,10 +25,9 @@ namespace gos_uslugi
         {
             try
             {
-                List<ServiceRule> rulesFromDb = await _ruleRepository.GetServiceRules(_serviceId);
-                _rules = new List<ServiceRule>(rulesFromDb);
+                rulesFromDb = await _ruleRepository.GetServiceRules(_serviceId);
                 
-                dataGridViewRules.DataSource = _rules;
+                dataGridViewRules.DataSource = rulesFromDb;
                 dataGridViewRules.Columns.Clear();
                 dataGridViewRules.Columns.Add(new DataGridViewTextBoxColumn
                 {
@@ -75,7 +74,7 @@ namespace gos_uslugi
         {
             try
             {
-                foreach (ServiceRule rule in _rules)
+                foreach (ServiceRule rule in rulesFromDb)
                 {
                     if (rule.Id == 0) 
                     {

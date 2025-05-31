@@ -191,30 +191,48 @@ namespace gos_uslugi
         }
         public async Task DeleteService(long serviceId)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection())
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
             {
                 await connection.OpenAsync();
-
-                string updateRequestsQuery = "UPDATE request SET id_service = NULL WHERE id_service = @id";
-                string deleteRulesQuery = "DELETE FROM service_rule WHERE id_service = @id";
-                string deleteServiceQuery = "DELETE FROM service WHERE id_service = @id";
-
-                using (NpgsqlCommand commandUpdateRequests = new NpgsqlCommand(updateRequestsQuery, connection))
+                using (var transaction = connection.BeginTransaction())
                 {
-                    commandUpdateRequests.Parameters.AddWithValue("@id", serviceId);
-                    await commandUpdateRequests.ExecuteNonQueryAsync();
-                }
+                    try
+                    {
+                        string updateRequestsQuery = "UPDATE request SET id_service = NULL WHERE id_service = @id";
+                        string deleteRulesQuery = "DELETE FROM service_rule WHERE id_service = @id";
+                        string deleteServiceQuery = "DELETE FROM service WHERE id_service = @id";
 
-                using (NpgsqlCommand commandDeleteRules = new NpgsqlCommand(deleteRulesQuery, connection))
-                {
-                    commandDeleteRules.Parameters.AddWithValue("@id", serviceId);
-                    await commandDeleteRules.ExecuteNonQueryAsync();
-                }
 
-                using (NpgsqlCommand commandDeleteService = new NpgsqlCommand(deleteServiceQuery, connection))
-                {
-                    commandDeleteService.Parameters.AddWithValue("@id", serviceId);
-                    await commandDeleteService.ExecuteNonQueryAsync();
+                        using (NpgsqlCommand commandUpdateRequests = new NpgsqlCommand(updateRequestsQuery, connection, transaction))
+                        {
+                            commandUpdateRequests.Parameters.AddWithValue("@id", serviceId);
+                            await commandUpdateRequests.ExecuteNonQueryAsync();
+                        }
+
+                        using (NpgsqlCommand commandDeleteRules = new NpgsqlCommand(deleteRulesQuery, connection, transaction))
+                        {
+                            commandDeleteRules.Parameters.AddWithValue("@id", serviceId);
+                            await commandDeleteRules.ExecuteNonQueryAsync();
+                        }
+
+                        using (NpgsqlCommand commandDeleteService = new NpgsqlCommand(deleteServiceQuery, connection, transaction))
+                        {
+                            commandDeleteService.Parameters.AddWithValue("@id", serviceId);
+                            await commandDeleteService.ExecuteNonQueryAsync();
+                        }
+
+                        transaction.Commit();
+                    }
+                    catch (NpgsqlException ex)
+                    {
+                        transaction.Rollback();
+                        MessageBox.Show($"Ошибка при удалении услуги: {ex.Message}");
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        MessageBox.Show($"Произошла ошибка: {ex.Message}");
+                    }
                 }
             }
         }

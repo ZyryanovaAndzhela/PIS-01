@@ -8,6 +8,7 @@ namespace gos_uslugi
     public partial class Авторизация : Form
     {
         private readonly IAuthenticationService _authenticationService;
+        IAccountRepository accountRepository = new AccountRepository();
         private readonly IForeignerRepository foreignerRepository = new ForeignerRepository();
 
         public Авторизация(IAuthenticationService authenticationService)
@@ -21,13 +22,11 @@ namespace gos_uslugi
             string login = textBox1.Text;
             string password = textBox2.Text;
 
-            IAuthenticationService authenticationService = new AuthenticationService(new AccountRepository());
-
             Account account = await _authenticationService.Authenticate(login, password);
 
             if (account != null)
             {
-                ГлавноеМеню form2 = new ГлавноеМеню(account, foreignerRepository, authenticationService);
+                ГлавноеМеню form2 = new ГлавноеМеню(account);
                 this.Hide();
                 form2.ShowDialog();
                 this.Show();
@@ -40,10 +39,8 @@ namespace gos_uslugi
 
         private void label4_Click(object sender, EventArgs e)
         {
-            IAccountRepository accountRepository = new AccountRepository();
-            IForeignerRepository foreignerRepository = new ForeignerRepository();
+            
             IForeignerService foreignerService = new ForeignerService(foreignerRepository, accountRepository);
-
             СозданиеНовогоАккаунта form4 = new СозданиеНовогоАккаунта(accountRepository, foreignerRepository, foreignerService);
             this.Hide();
             form4.ShowDialog();

@@ -8,15 +8,11 @@ namespace gos_uslugi
     public partial class ГлавноеМеню: Form
     {
         private readonly Account _account;
-        private readonly IForeignerRepository _foreignerRepository;
-        private readonly IAuthenticationService _authenticationService;
 
-        public ГлавноеМеню(Account account, IForeignerRepository foreignerRepository, IAuthenticationService authenticationService)
+        public ГлавноеМеню(Account account)
         {
             InitializeComponent();
             _account = account;
-            _foreignerRepository = foreignerRepository;
-            _authenticationService = authenticationService;
 
             button1.Visible = !(_account.Role == "admin" || _account.Role == "employee");
         }
