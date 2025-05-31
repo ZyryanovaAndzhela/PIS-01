@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace gos_uslugi
 {
-    public partial class ИзменениеПравилУслуги: Form
+    public partial class ИзменениеПравилУслуги : Form
     {
         private long _serviceId;
         private readonly IServiceRepository _serviceRepository;
@@ -23,46 +23,26 @@ namespace gos_uslugi
 
         private async void LoadRules()
         {
+            dataGridViewRules.Rows.Clear();
+
             try
             {
                 rulesFromDb = await _ruleRepository.GetServiceRules(_serviceId);
-                
-                dataGridViewRules.DataSource = rulesFromDb;
-                dataGridViewRules.Columns.Clear();
-                dataGridViewRules.Columns.Add(new DataGridViewTextBoxColumn
-                {
-                    DataPropertyName = "Description",
-                    HeaderText = "Описание",
-                    Width = 150
-                });
 
-                dataGridViewRules.Columns.Add(new DataGridViewTextBoxColumn
+                foreach (ServiceRule rule in rulesFromDb)
                 {
-                    DataPropertyName = "ConditionType",
-                    HeaderText = "Тип условия",
-                    Width = 150
-                });
+                    DataGridViewRow row = new DataGridViewRow();
 
-                dataGridViewRules.Columns.Add(new DataGridViewTextBoxColumn
-                {
-                    DataPropertyName = "ConditionValues",
-                    HeaderText = "Значение условия",
-                    Width = 150
-                });
+                    row.Cells.Add(new DataGridViewTextBoxCell() { Value = rule.Description });
+                    row.Cells.Add(new DataGridViewTextBoxCell() { Value = rule.ConditionType });
+                    row.Cells.Add(new DataGridViewTextBoxCell() { Value = rule.ConditionValues });
+                    row.Cells.Add(new DataGridViewTextBoxCell() { Value = rule.OperatorValues });
+                    row.Cells.Add(new DataGridViewTextBoxCell() { Value = rule.TermOfServiceProvision });
 
-                dataGridViewRules.Columns.Add(new DataGridViewTextBoxColumn
-                {
-                    DataPropertyName = "OperatorValues",
-                    HeaderText = "Оператор",
-                    Width = 100
-                });
+                    row.Tag = rule.Id;
 
-                dataGridViewRules.Columns.Add(new DataGridViewTextBoxColumn
-                {
-                    DataPropertyName = "TermOfServiceProvision",
-                    HeaderText = "Срок",
-                    Width = 75
-                });
+                    dataGridViewRules.Rows.Add(row);
+                }
             }
             catch (Exception ex)
             {
@@ -74,15 +54,40 @@ namespace gos_uslugi
         {
             try
             {
-                foreach (ServiceRule rule in rulesFromDb)
+                for (int i = 0; i < dataGridViewRules.Rows.Count; i++)
                 {
-                    if (rule.Id == 0) 
+                    DataGridViewRow row = dataGridViewRules.Rows[i];
+
+                    if (!row.IsNewRow) 
                     {
-                        await _ruleRepository.SaveServiceRule(rule);
-                    }
-                    else
-                    {
-                        await _ruleRepository.UpdateServiceRule(rule);
+                        if (row.Tag != null && row.Tag is long)
+                        {
+                            long ruleId = (long)row.Tag;
+
+                            foreach (ServiceRule rule in rulesFromDb)
+                            {
+                                if (rule.Id == ruleId)
+                                {
+                                    rule.Description = (string)row.Cells["Description"].Value; 
+                                    rule.ConditionType = (string)row.Cells["ConditionType"].Value;
+                                    rule.ConditionValues = (string)row.Cells["ConditionValues"].Value;
+                                    rule.OperatorValues = (string)row.Cells["OperatorValues"].Value;
+                                    int term = Int32.Parse(row.Cells["TermOfServiceProvision"].Value.ToString());
+                                    rule.TermOfServiceProvision = (int)term;
+
+                                    if (rule.Id == 0)
+                                    {
+                                        await _ruleRepository.SaveServiceRule(rule);
+                                    }
+                                    else
+                                    {
+                                        await _ruleRepository.UpdateServiceRule(rule);
+                                    }
+
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -92,6 +97,8 @@ namespace gos_uslugi
             {
                 MessageBox.Show($"Неизвестная ошибка: {ex.Message}");
             }
+
+            LoadRules();
         }
 
         private async void buttonDeleteRule_Click(object sender, EventArgs e)
@@ -99,19 +106,27 @@ namespace gos_uslugi
             if (dataGridViewRules.SelectedRows.Count > 0)
             {
                 DataGridViewRow selectedRow = dataGridViewRules.SelectedRows[0];
-                long ruleId = (long)selectedRow.Index;
 
-                try
+                if (selectedRow.Tag != null && selectedRow.Tag is long)
                 {
-                    await _ruleRepository.DeleteServiceRule(ruleId);
+                    long ruleId = (long)selectedRow.Tag;
 
-                    LoadRules();
+                    try
+                    {
+                        await _ruleRepository.DeleteServiceRule(ruleId);
 
-                    MessageBox.Show("Правило услуги успешно удалено!");
+                        dataGridViewRules.Rows.Remove(selectedRow);
+
+                        MessageBox.Show("Правило услуги успешно удалено!");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Ошибка при удалении правила услуги: {ex.Message}");
+                    }
                 }
-                catch (Exception ex)
+                else
                 {
-                    MessageBox.Show($"Ошибка при удалении правила услуги: {ex.Message}");
+                    MessageBox.Show("Ошибка: Не удалось получить ID правила.");
                 }
             }
             else
