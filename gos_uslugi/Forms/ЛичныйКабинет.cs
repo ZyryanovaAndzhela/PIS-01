@@ -126,6 +126,7 @@ namespace gos_uslugi
             dateTimePicker1.Enabled = true;
             textBoxPassword.ReadOnly = false;
             textBox8.ReadOnly = false;
+
             button2.Visible = true;
             button3.Visible = true;
             button1.Visible = false;

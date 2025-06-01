@@ -31,12 +31,6 @@ namespace gos_uslugi
             string login = email;
             string password = textBoxPassword.Text;
 
-            if (string.IsNullOrEmpty(fullName) || string.IsNullOrEmpty(phoneNumber) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
-            {
-                MessageBox.Show("Заполните все обязательные поля.");
-                return;
-            }
-
             bool loginAlreadyRegistered = await _accountRepository.IsLoginAlreadyRegistered(login, 0);
             if (loginAlreadyRegistered)
             {

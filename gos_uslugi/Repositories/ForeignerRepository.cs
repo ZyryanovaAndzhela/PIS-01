@@ -92,7 +92,7 @@ namespace gos_uslugi.Repositories
 
             try
             {
-                using (NpgsqlConnection connection = new NpgsqlConnection(ConfigurationManager.ConnectionString)) // Используем _connectionString
+                using (NpgsqlConnection connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
                 {
                     await connection.OpenAsync();
 
