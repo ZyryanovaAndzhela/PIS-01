@@ -102,5 +102,27 @@ namespace gos_uslugi
             }
             return account;
         }
+
+        public async Task<bool> IsLoginAlreadyRegistered(string login, long currentAccountId)
+        {
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
+            {
+                await connection.OpenAsync();
+
+                string sqlQuery = @"
+                    SELECT COUNT(*)
+                    FROM account
+                    WHERE login = @login AND id_account != @currentAccountId";
+
+                using (NpgsqlCommand command = new NpgsqlCommand(sqlQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@login", login);
+                    command.Parameters.AddWithValue("@currentAccountId", currentAccountId);
+
+                    long count = (long)await command.ExecuteScalarAsync();
+                    return count > 0;
+                }
+            }
+        }
     }
 }

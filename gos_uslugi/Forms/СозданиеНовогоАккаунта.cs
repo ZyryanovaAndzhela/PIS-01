@@ -37,6 +37,13 @@ namespace gos_uslugi
                 return;
             }
 
+            bool loginAlreadyRegistered = await _accountRepository.IsLoginAlreadyRegistered(login, 0);
+            if (loginAlreadyRegistered)
+            {
+                MessageBox.Show("Аккаунт с таким email уже существует. Укажите другой email.");
+                return;
+            }
+
             try
             {
                 Account newAccount = new Account

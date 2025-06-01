@@ -167,7 +167,7 @@ namespace gos_uslugi
                 string newPassword = textBoxPassword.Text;
                 string newLogin = textBox2.Text;
 
-                if (await IsLoginAlreadyRegistered(newLogin, _account.Id))
+                if (await _accountRepository.IsLoginAlreadyRegistered(newLogin, _account.Id))
                 {
                     MessageBox.Show("Этот логин уже зарегистрирован");
                     return;
@@ -197,27 +197,6 @@ namespace gos_uslugi
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка при обновлении данных: {ex.Message}");
-            }
-        }
-        private async Task<bool> IsLoginAlreadyRegistered(string login, long currentAccountId)
-        {
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConfigurationManager.ConnectionString))
-            {
-                await connection.OpenAsync();
-
-                string sqlQuery = @"
-                    SELECT COUNT(*)
-                    FROM account
-                    WHERE login = @login AND id_account != @currentAccountId"; 
-
-                using (NpgsqlCommand command = new NpgsqlCommand(sqlQuery, connection))
-                {
-                    command.Parameters.AddWithValue("@login", login);
-                    command.Parameters.AddWithValue("@currentAccountId", currentAccountId);
-
-                    long count = (long)await command.ExecuteScalarAsync();
-                    return count > 0;
-                }
             }
         }
 

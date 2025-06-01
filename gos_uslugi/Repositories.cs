@@ -29,6 +29,7 @@ namespace gos_uslugi
         Task<Account> Save(Account account);
         Task<Account> FindByLogin(string login);
         Task<Account> FindById(long accountId);
+        Task<bool> IsLoginAlreadyRegistered(string login, long currentAccountId);
     }
 
     public interface IServiceRepository
